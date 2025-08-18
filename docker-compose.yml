@@ -15,7 +15,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      ml_service:  # <-- Зависимость от ML-сервиса
+      ml_service:
         condition: service_started
     ports:
       - "8000:8000"
@@ -33,7 +33,7 @@ services:
 
   ml_service:
     build:
-      context: ./ml_service  # путь к директории с нейросетью
+      context: ./ml_service # путь к директории с нейросетью
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
