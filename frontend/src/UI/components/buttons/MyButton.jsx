@@ -1,12 +1,16 @@
+// MyButton.jsx
 import React from "react";
-import style from '../../../styles/MyButton.module.css'
+import style from "../../../styles/MyButton.module.css";
 
-const MyButton = ({children, ...props}) => {
-    return (
-        <button {...props} className={style.MyButton}>
-            {children}
-        </button>
-    );
+const MyButton = ({ children, blur, ...props }) => {
+  return (
+    <button
+      {...props}
+      className={`${style.MyButton} ${blur ? style.MyButtonBlur : ""}`}
+    >
+      {children}
+    </button>
+  );
 };
 
 export default MyButton;

@@ -1,44 +1,61 @@
+/* MyInput.module.css */
 .MyInput {
-    border-radius: 15px;
+    border-radius: 17px;
     width: 90%;
-    height: 47px;
-    margin-top: 5%;
+    height: 55px;
     margin-top: 20px;
     border: none;
     outline: none;
-}
-input {
-    font-family: 'Montserrat', 'semi-bold';
-    font-size: 0.75rem;
+    font-family: "Montserrat";
+    font-weight: 500;
+    font-size: 1rem;
     text-indent: 20px;
 }
 
+.MyInputBlur {
+    /* Применение эффекта размытия с помощью backdrop-filter */
+    backdrop-filter: blur(5px);
+    background-color: rgba(30, 30, 30, 0.1); /* Прозрачный фон для эффекта */
+}
+
+input {
+    font-family: "Montserrat";
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 70%;
+}
+
 ::-webkit-input-placeholder {
-    /* WebKit/Blink browsers */
-    font-family: 'Montserrat', 'semi-bold';
-    font-size: 0.75rem;
+    font-family: "Montserrat";
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 55%;
 }
 
 ::-moz-placeholder {
-    /* Firefox 19+ */
-    font-family: 'Montserrat', 'semi-bold';
-    font-size: 0.75rem;
+    font-family: "Montserrat";
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 55%;
 }
 
 :-ms-input-placeholder {
-    /* Internet Explorer 10-11 */
-    font-family: 'Montserrat', 'semi-bold';
-    font-size: 0.75rem;
+    font-family: "Montserrat";
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 55%;
 }
 
 :-moz-placeholder {
-    /* Mozilla Firefox 4 to 18 */
-    font-family: 'Montserrat', 'semi-bold';
-    font-size: 0.75rem;
+    font-family: "Montserrat";
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 55%;
 }
 
 ::placeholder {
-    font-family: 'Montserrat', 'semi-bold';
-    font-size: 0.75rem;
-
+    font-family: "Montserrat";
+    font-size: 1rem;
+    color: #ffffff;
+    opacity: 55%;
 }

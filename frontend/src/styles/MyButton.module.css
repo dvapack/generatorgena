@@ -1,10 +1,21 @@
 .MyButton {
-    font-family: 'Montserrat', 'semi-bold';
-    border-radius: 15px;
+    font-family: "Montserrat";
+    font-weight: 500;
+    border-radius: 17px;
     width: 90%;
-    height: 47px;
-    font-size: 1.1rem;
+    height: 55px;
+    font-size: 1.2rem;
     margin-bottom: 20px;
     border: none;
     outline: none;
+    transition: all 0.3s ease; /* Плавный переход */
+    color: #ffffff;
+    opacity: 90%;
+}
+
+.MyButtonBlur {
+    /* Применение эффекта размытия с помощью backdrop-filter */
+
+    backdrop-filter: blur(5px);
+    background-color: rgba(252, 59, 192, 0.5); /* Прозрачный фон для эффекта */
 }
