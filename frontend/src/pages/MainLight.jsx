@@ -303,13 +303,9 @@ const MainLight = () => {
 
               <div className={`col-lg-5 text-center`}>
                 {/* Контейнер для изображения */}
-                <div className={style.imageContainer}>
+                <div>
                   {imageSrc ? (
-                    <img
-                      src={imageSrc}
-                      alt="Полученное изображение"
-                      className={style.generatedImage}
-                    />
+                    <img src={imageSrc} alt="Полученное изображение" />
                   ) : (
                     <div className={style.Info}>
                       <h1 className={style.InfoText}>
