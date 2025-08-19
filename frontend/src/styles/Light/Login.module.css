@@ -1,47 +1,47 @@
 html,
 body {
-    font-family: 'Montserrat';
-    background: #ffffff;
+    font-family: "Montserrat";
+    font-weight: 900 !important;
+    background: -webkit-linear-gradient(90deg, #7d5dfe, #bb3bf7, #ff66a1);
+    background: linear-gradient(90deg, #7d5dfe, #bb3bf7, #ff66a1);
 }
-
 .LoginPage {
     position: relative !important;
     width: 100% !important;
     height: 100% !important;
-    background: #ffffff !important;
 }
-
-.Header {
-    position: relative !important;
-    display: flex;
-    width: 100% !important;
-    height: 45px !important;
-    background-color: rgba(224, 224, 224, 0.5) !important;
-}
-
-.HeaderLink {
-    font-size: 1.3rem !important;
-    color: rgba(31, 92, 182, 1) !important;
-    font-weight: bold !important;
-    text-decoration: none;
-    margin-top: 0.5%;
-    margin-left: 2%;
-}
-
 .MainPage {
-    margin-top: 5% !important;
+    margin-top: 14% !important;
 }
-
 .Info {
     display: flex !important;
+    position: absolute;
     justify-content: center !important;
     align-items: center !important;
     flex-direction: column !important;
-    left: 10% !important;
+    left: 16% !important;
     line-height: 1.5 !important;
-    margin-top: 2% !important;
+    margin-top: 11% !important;
 }
-
+.InfoText {
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    opacity: 0.8 !important;
+    text-align: center !important;
+    margin-left: -45%;
+    font-size: 3rem !important;
+    word-spacing: 100% !important;
+    max-width: 500px;
+}
+.MainBlur {
+    position: absolute;
+    width: 45%;
+    height: 100%;
+    left: 55%;
+    top: 0%;
+    background: rgba(30, 30, 30, 0.1);
+    filter: blur(25px);
+}
 .form {
     position: relative !important;
     display: flex !important;
@@ -49,180 +49,53 @@ body {
     align-items: center !important;
     flex-direction: column !important;
 }
-
-h1 {
-    font-weight: bold !important;
-    color: #1F5CB6 !important;
-    opacity: 0.9 !important;
-    text-align: left !important;
-    font-size: 1.3rem !important;
-    word-spacing: 100% !important;
-}
-
 .MainForm {
     position: relative !important;
     justify-content: center !important;
     align-items: center !important;
     flex-direction: column !important;
-    background-color: rgba(224, 224, 224, 0.5) !important;
-    padding-bottom: 7% !important;
+    padding-bottom: 4% !important;
     padding-top: 7% !important;
     padding-left: 1.5% !important;
     padding-right: 1.5% !important;
-    border-radius: 15px !important;
+    border-radius: 30px !important;
     overflow: auto !important;
-    left: 15% !important;
-    width: 82% !important;
+    left: 20% !important;
+    width: 120% !important;
+    height: 105%;
 }
-
-.buttonOn {
-    background-color: #1F5CB6;
-    color: #ffffff;
-    opacity: 0.9 !important;
+.MainFormBlur {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0%;
+    top: 0%;
+    background: rgba(30, 30, 30, 0.1);
+    filter: blur(5px);
 }
-
-.QR {
-    position: relative !important;
-    height: 25% !important;
-    border-radius: 15px !important;
-    background-color: rgba(224, 224, 224, 0.5) !important;
-    display: flex !important;
-    margin-top: 7% !important;
-    left: 15% !important;
-    width: 82% !important;
+.MainFormHeaderText {
+    color: #ffffff !important;
+    opacity: 0.75 !important;
+    text-align: center !important;
+    font-size: 1.7rem !important;
+    word-spacing: 100% !important;
 }
-
-h2 {
-    font-weight: bold !important;
-    font-size: 1.5rem !important;
-    line-height: 1.5 !important;
-    color: #000 !important;
-}
-
-h3 {
-    font-weight: bold !important;
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
-    color: #545454 !important;
-}
-
 .Bottom {
     display: flex !important;
     flex-direction: row !important;
     align-content: flex-end !important;
-    justify-content: center!important;
-    align-items: center!important;
-    margin-left: 10% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-left: 3% !important;
     margin-top: 2% !important;
-    width: 80% !important;
+    width: 30% !important;
     position: fixed;
     bottom: 2% !important;
-    background-color: #ffffff !important;
 }
-
-.Link {
-    flex-direction: row !important;
-}
-
-img {
-    margin-top: 7% !important;
-    width: 80% !important;
-    height: 80% !important;
-    margin-bottom: 7% !important;
-}
-
-a {
-    padding-right: 25px !important;
-    padding-left: 25px !important;
+.BottomText {
+    color: #ffffff !important;
+    opacity: 70% !important;
+    text-align: center !important;
     font-size: 0.75rem !important;
-    color: #000;
-}
-
-h4 {
-    font-size: 0.75rem !important;
-    padding-right: 250px !important;
-    padding-left: 0px!important;
-    color: #545454 !important;
-}
-
-.qrImg {
-    width: 50% !important;
-    margin-left: 3% !important;
-    margin-top: 4% !important;
-    margin-bottom: 0% !important;
-}
-
-h5 {
-    font-size: 0.8em !important;
-    font-weight: bold !important;
-    width: 80 !important;
-    margin-top: 13% !important;
-    margin-left: 5% !important;
-    color: #545454 !important;
-}
-
-h6 {
-    font-size: 0.65em !important;
-    width: 80% !important;
-    margin-left: 5% !important;
-    font-weight: 600 !important;
-    color: #000;
-}
-
-.more {
-    padding-left: 5% !important;
-    color: #1F5CB6 !important;
-    opacity: 0.9 !important;
-}
-
-.Remember {
-    align-self: flex-start;
-    margin-left: 10%;
-    margin-top: 5%;
-    text-align: left !important;
-    justify-content: left !important;
-    align-items: left !important;
-    color: rgba(0, 0, 0, 0.9) !important;
-    font-weight: bold !important;
-    font-size: 0.75rem;
-}
-
-.text {
-    color: #545454 !important;
-}
-
-a {
-    color: #545454 !important;
-    font-weight: bold !important;
-    padding-right: 25px !important;
-    padding-left: 25px !important;
-    font-size: 0.75rem !important;
-    text-decoration: none !important;
-
-}
-.error {
-    margin-top: 5%;
-    align-self: flex-start;
-    margin-left: 2%;
-    text-align: left !important;
-    justify-content: left !important;
-    align-items: left !important;
-    color: rgba(31, 92, 182, 1) !important;
-    font-weight: bold !important;
-    font-size: 0.75rem;
-    margin-bottom: 5%;
-}
-.remember {
-    display: flex;
-    align-items: center;
-}
-
-.remember input {
-    margin-right: 5px; 
-}
-
-.git {
-    color: #000!important;
-    font-size: 1.3rem!important;
-    margin-right: 2%;;
+    word-spacing: 100% !important;
 }

@@ -15,12 +15,13 @@ body {
 }
 .Info {
     display: flex !important;
+    position: absolute;
     justify-content: center !important;
     align-items: center !important;
     flex-direction: column !important;
-    left: 10% !important;
+    left: 16% !important;
     line-height: 1.5 !important;
-    margin-top: 17% !important;
+    margin-top: 11% !important;
 }
 .InfoText {
     font-weight: 600 !important;
@@ -28,9 +29,9 @@ body {
     opacity: 0.8 !important;
     text-align: center !important;
     margin-left: -45%;
-    font-size: 3.3rem !important;
+    font-size: 3rem !important;
     word-spacing: 100% !important;
-    width: 500px;
+    max-width: 500px;
 }
 .MainBlur {
     position: absolute;
@@ -85,7 +86,7 @@ body {
     align-content: flex-end !important;
     justify-content: center !important;
     align-items: center !important;
-    margin-left: 0% !important;
+    margin-left: 3% !important;
     margin-top: 2% !important;
     width: 30% !important;
     position: fixed;

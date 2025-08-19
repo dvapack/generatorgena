@@ -69,17 +69,9 @@ const RegLight = () => {
   const handleRedirectToLogin = () => {
     history.push("/login");
   };
-  const returnToLogin = () => {
-    history.push("/login");
-  };
-  const returnOurTeam = () => {
-    history.push("/ourteam");
-  };
-  const { t, i18n } = useTranslation("translation");
   return (
     <div>
       <div className={style.MainBlur} />
-      {/** контейнер страницы */}
       <div className={style.LoginPage}>
         <div className="container-fluid">
           <div className={style.MainPage}>
@@ -101,21 +93,21 @@ const RegLight = () => {
                       blur={true}
                       style={{ margin: "0px", marginTop: "5%" }}
                       type="text"
-                      placeholder="Введите имя пользователя"
+                      placeholder="Укажите логин"
                       onChange={handleUsernameChange}
                     />
                     <MyInput
                       blur={true}
                       style={{ margin: "0px", marginTop: "5%" }}
                       type="text"
-                      placeholder="Введите email"
+                      placeholder="Укажите почту"
                       onChange={handleEmailChange}
                     />
                     <MyInput
                       blur={true}
                       style={{ margin: "0px", marginTop: "5%" }}
                       type="password"
-                      placeholder="Введите пароль"
+                      placeholder="Укажите пароль"
                       onChange={handlePasswordChange}
                     />
                     <MyButton
@@ -131,7 +123,6 @@ const RegLight = () => {
                   </form>
                 </div>
               </div>
-              {/** ссылки внизу страницы */}
               <div className={style.Bottom}>
                 <h4 className={style.BottomText}>Гена © 2025</h4>
               </div>
