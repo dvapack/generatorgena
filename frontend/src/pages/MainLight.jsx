@@ -10,7 +10,7 @@ import { useHistory } from "react-router-dom";
 const MainLight = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("accessToken")
+    localStorage.getItem("accessToken"),
   );
   const [requestData, setRequestData] = useState({ prompt: "" });
   const handlePromptChange = (event) => {
@@ -21,11 +21,11 @@ const MainLight = () => {
   const refreshAccessToken = async () => {
     try {
       const refreshToken = localStorage.getItem("refreshToken");
-      console.log("refresh", refreshToken)
+      console.log("refresh", refreshToken);
       if (!refreshToken) {
         throw new Error("Refresh token not found");
       }
-  
+
       const response = await fetch("http://localhost:8000/api/users/refresh/", {
         method: "POST",
         headers: {
@@ -35,28 +35,28 @@ const MainLight = () => {
         },
         body: JSON.stringify({ refresh: refreshToken }), // или { refresh_token: refreshToken }
       });
-  
+
       // Логирование для отладки
       console.log("Refresh token response status:", response.status);
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Refresh token error details:", errorData);
         throw new Error("Failed to refresh token");
       }
-  
+
       const data = await response.json();
       console.log("New tokens data:", data);
-  
+
       // Проверка наличия access-токена в ответе
       if (!data.access) {
         throw new Error("Access token not found in response");
       }
-  
+
       localStorage.setItem("accessToken", data.access);
       localStorage.setItem("refreshToken", data.refresh);
       setAccessToken(data.access);
-      console.log("token", data.access)
+      console.log("token", data.access);
       return data.access; // Возвращаем новый токен для использования
     } catch (err) {
       console.error("Error refreshing token:", err);
@@ -74,11 +74,14 @@ const MainLight = () => {
   useEffect(() => {
     //refreshAccessToken();
     // Обновляем токен сразу при загрузке (по желанию)
-    const intervalId = setInterval(() => {
-      refreshAccessToken();
-    }, 5 * 60 * 1000); // 5 минут
+    const intervalId = setInterval(
+      () => {
+        refreshAccessToken();
+      },
+      5 * 60 * 1000,
+    ); // 5 минут
 
-    return () => clearInterval(intervalId); 
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleSubmit = async (event) => {
@@ -88,8 +91,8 @@ const MainLight = () => {
     try {
       const userId = getUserIdFromToken();
       const token = localStorage.getItem("accessToken");
-      console.log("meow")
-      console.log("TOKEN:  ",token)
+      console.log("meow");
+      console.log("TOKEN:  ", token);
       if (!token) {
         throw new Error("JWT token not found in localStorage");
       }
@@ -118,7 +121,7 @@ const MainLight = () => {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
-              }
+              },
             );
 
             if (imageResponse.ok) {
@@ -130,7 +133,6 @@ const MainLight = () => {
               // Изображение ещё не готово, ждём и повторяем попытку
               await new Promise((res) => setTimeout(res, delay));
             } else {
-
               alert("Ошибка при получении изображения");
               return;
             }
@@ -184,7 +186,7 @@ const MainLight = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // формат токена для JWT
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -192,7 +194,7 @@ const MainLight = () => {
       }
 
       const data = await response.json();
-      console.log(data[2].operationID)
+      console.log(data[2].operationID);
       // Предполагаем, что data — массив запросов, сортируем и берём последние 3
       const lastThree = data.slice(-3).reverse();
       setHistory(lastThree);
@@ -208,30 +210,30 @@ const MainLight = () => {
   const fetchRequestDetails = async (requestId) => {
     try {
       setIsLoading(true);
-      console.log(requestId)
+      console.log(requestId);
       const userId = getUserIdFromToken();
       const token = localStorage.getItem("accessToken");
-      const url = new URL(`https://your-api-domain.com/api/requests/${requestId}`);
-      url.searchParams.append('user_id', userId);
-
+      const url = new URL(
+        `https://your-api-domain.com/api/requests/${requestId}`,
+      );
+      url.searchParams.append("user_id", userId);
 
       if (!token) {
         throw new Error("Access token not found");
       }
 
-      const response = await fetch(
-        url.toString(),
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(`Ошибка при получении деталей запроса: ${response.status}`);
+        throw new Error(
+          `Ошибка при получении деталей запроса: ${response.status}`,
+        );
       }
 
       const data = await response.json();
@@ -245,33 +247,36 @@ const MainLight = () => {
 
   const getItemStyle = (item) => {
     return {
-      backgroundColor: item.success ? "#e6ffe6" : "#ffe6e6", 
+      backgroundColor: item.success ? "#e6ffe6" : "#ffe6e6",
       margin: "5px 0",
       borderRadius: "5px",
-      cursor: "pointer", 
+      cursor: "pointer",
     };
   };
 
   async function deleteUser() {
     const userId = getUserIdFromToken();
-      const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken");
     try {
-      const response = await fetch(`http://localhost:8000/api/users/?user_id=${userId}`, {
-        method: 'DELETE', 
-        headers: {
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${accessToken}` 
-        }
-      });
-  
+      const response = await fetch(
+        `http://localhost:8000/api/users/?user_id=${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
       if (!response.ok) {
         throw new Error(`Ошибка HTTP: ${response.status}`);
       }
-  
+
       const data = await response.json();
-      console.log('Пользователь удалён:', data);
+      console.log("Пользователь удалён:", data);
     } catch (error) {
-      console.error('Ошибка при удалении пользователя:', error);
+      console.error("Ошибка при удалении пользователя:", error);
     }
   }
   // переход между страницами
@@ -289,49 +294,71 @@ const MainLight = () => {
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}></Suspense>
-      {/** контейнер страницы */}
+      <div className={style.MainBlur} />
       <div className={style.LoginPage}>
-        {/** заголовок*/}
-        <div className={style.Header}>
-          <a onClick={returnToLogin} className={style.HeaderLink}>
-            Генератор Гена
-          </a>
-        </div>
         <div className="container-fluid">
           <div className={style.MainPage}>
             <div className="row">
               <div className={"col-lg-2"}></div>
+
               <div className={`col-lg-5 text-center`}>
-                <div className={style.Info}>
-                  <h2>Генератор Гена</h2>
-                </div>
-                <div style={{ height: "80% " }}>
-                  {imageSrc && (
-                    <img src={imageSrc} alt="Полученное изображение" />
+                {/* Контейнер для изображения */}
+                <div className={style.imageContainer}>
+                  {imageSrc ? (
+                    <img
+                      src={imageSrc}
+                      alt="Полученное изображение"
+                      className={style.generatedImage}
+                    />
+                  ) : (
+                    <div className={style.Info}>
+                      <h1 className={style.InfoText}>
+                        Гена - генератор изображений
+                      </h1>
+                    </div>
                   )}
                 </div>
               </div>
               <div className={`col-lg-3`}>
                 <div className={style.MainForm}>
+                  <div className={style.MainFormBlur} />
                   <form className={style.form}>
-                    <h1>Введите промпт</h1>
-                    <MyInput
-                      style={{ margin: "0px", marginTop: "8%" }}
-                      type="text"
+                    <h1 className={style.MainFormHeaderText}>Введите промпт</h1>
+                    <textarea
+                      className="MyInput MyInputBlur"
+                      style={{
+                        margin: "0px",
+                        marginTop: "5%",
+                        height: "255px",
+                        width: "90%",
+                        resize: "none",
+                        verticalAlign: "top",
+                        borderRadius: "17px",
+                        border: "none",
+                        outline: "none",
+                        fontFamily: "Montserrat",
+                        fontWeight: 500,
+                        fontSize: "1rem",
+                        padding: "20px",
+                        color: "#ffffff",
+                        opacity: "0.7",
+                        backgroundColor: "rgba(30, 30, 30, 0.1)",
+                        backdropFilter: "blur(5px)",
+                      }}
                       placeholder="Введите промпт"
                       onChange={handlePromptChange}
                     />
                     <MyButton
+                      blur={true}
                       style={{
-                        backgroundColor: "#1F5CB6",
-                        color: "#ffffff",
                         margin: "0px",
                         marginTop: "8%",
                       }}
                       onClick={handleSubmit}
                     >
-                      Продолжить
+                      Сгенерировать
                     </MyButton>
+                    {/*
                     <MyButton
                       style={{
                         backgroundColor: "#1F5CB6",
@@ -344,7 +371,9 @@ const MainLight = () => {
                     >
                       История
                     </MyButton>
+                    */}
                   </form>
+                  {/*
                   {showHistory && (
                     <div>
                       <h2>История запросов</h2>
@@ -353,7 +382,9 @@ const MainLight = () => {
                           <li
                             key={index}
                             style={getItemStyle(item)}
-                            onClick={() => fetchRequestDetails(item.operationID)} // Обработчик клика
+                            onClick={() =>
+                              fetchRequestDetails(item.operationID)
+                            } // Обработчик клика
                           >
                             {item.prompt || JSON.stringify(item)}
                           </li>
@@ -361,7 +392,8 @@ const MainLight = () => {
                       </ul>
                     </div>
                   )}
-
+                  */}
+                  {/*
                   {selectedRequest && (
                     <div>
                       <h2>Детали запроса</h2>
@@ -374,47 +406,13 @@ const MainLight = () => {
                         />
                       )}
                     </div>
-                  )}
-                </div>
-                <div className={style.QR}>
-                  <MyButton
-                    onClick={deleteUser}
-                    style={{ backgroundColor: '#ffffff', color: '#1F5CB6', margin: '15px' }}
-                  >
-                    Удалить пользователя
-                  </MyButton>
-                  <MyButton
-                    onClick={returnToChangePass}
-                    style={{ backgroundColor: '#ffffff', color: '#1F5CB6', margin: '15px' }}
-                  >
-                   Поменять пароль
-                  </MyButton>
+                     */}
                 </div>
               </div>
-              {/** ссылки внизу страницы */}
-              <div className={style.Bottom}>
-                <h4>Гена © 2025</h4>
-                <a
-                  className={style.text}
-                  onClick={returnOurTeam}
-                  style={{ marginRight: "15%" }}
-                >
-                  Github
-                </a>
-                <a
-                  onClick={() => i18n.changeLanguage("en")}
-                  className={style.text}
-                >
-                  English
-                </a>
-                <a
-                  onClick={() => i18n.changeLanguage("ru")}
-                  className={style.text}
-                  style={{ marginRight: "10%" }}
-                >
-                  Русский
-                </a>
-              </div>
+            </div>
+            {/** ссылки внизу страницы */}
+            <div className={style.Bottom}>
+              <h4 className={style.BottomText}>Гена © 2025</h4>
             </div>
           </div>
         </div>
