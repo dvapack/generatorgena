@@ -1,0 +1,107 @@
+html,
+body {
+    font-family: "Montserrat";
+    font-weight: 900 !important;
+    background: -webkit-linear-gradient(90deg, #7d5dfe, #bb3bf7, #ff66a1);
+    background: linear-gradient(90deg, #7d5dfe, #bb3bf7, #ff66a1);
+}
+.LoginPage {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+.MainPage {
+    margin-top: 14% !important;
+}
+.Info {
+    display: flex !important;
+    position: absolute;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+    left: 16% !important;
+    line-height: 1.5 !important;
+    margin-top: 11% !important;
+}
+.InfoText {
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    opacity: 0.8 !important;
+    text-align: center !important;
+    margin-left: -45%;
+    font-size: 3rem !important;
+    word-spacing: 100% !important;
+    max-width: 500px;
+}
+.MainBlur {
+    position: absolute;
+    width: 45%;
+    height: 100%;
+    left: 55%;
+    top: 0%;
+    background: rgba(30, 30, 30, 0.1);
+    filter: blur(25px);
+}
+.form {
+    position: relative !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+}
+.MainForm {
+    position: relative !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+    padding-bottom: 4% !important;
+    padding-top: 7% !important;
+    padding-left: 1.5% !important;
+    padding-right: 1.5% !important;
+    border-radius: 30px !important;
+    overflow: auto !important;
+    left: 20% !important;
+    width: 120% !important;
+    height: 105%;
+}
+.MainFormBlur {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0%;
+    top: 0%;
+    background: rgba(30, 30, 30, 0.1);
+    filter: blur(5px);
+}
+.MainFormHeaderText {
+    color: #ffffff !important;
+    opacity: 0.75 !important;
+    text-align: center !important;
+    font-size: 1.7rem !important;
+    word-spacing: 100% !important;
+    margin-top: 0%;
+}
+.Bottom {
+    display: flex !important;
+    flex-direction: row !important;
+    align-content: flex-end !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-left: 3% !important;
+    margin-top: 2% !important;
+    width: 30% !important;
+    position: fixed;
+    bottom: 2% !important;
+}
+.BottomText {
+    color: #ffffff !important;
+    opacity: 70% !important;
+    text-align: center !important;
+    font-size: 0.75rem !important;
+    word-spacing: 100% !important;
+}
+img {
+    height: 80%;
+    width: 80%;
+    margin-left: -45% !important;
+}
