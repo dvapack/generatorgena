@@ -30,7 +30,7 @@
 
 User 1 -> N GenerationRequest
 
-GenerationRequest 1 -> N GeneratedAsset
+GenerationRequest 1 -> 1 GeneratedAsset
 
 **Методы API:**
 1. /users
@@ -44,4 +44,4 @@ GenerationRequest 1 -> N GeneratedAsset
    2. GET / - получить все generationRequests
    3. GET /{id} - получить generationRequest + generatedAsset
    4. PUT /{id}/rating - оценить generatedAsset
-   5. GET /{id}/assets/{assetId} - скачать файл генерации
+   5. GET /{id}/asset/ - скачать файл генерации
