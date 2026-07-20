@@ -1,3 +1,9 @@
 spring:
   application:
     name: backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gena
+    username: postgres
+    password: secret
+  flyway:
+    enabled: true
