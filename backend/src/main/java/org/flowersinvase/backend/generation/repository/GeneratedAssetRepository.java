@@ -11,5 +11,7 @@ public interface GeneratedAssetRepository {
 
     Optional<GeneratedAsset> findByUserIdAndRequestId(UUID id, UUID requestId);
 
-    boolean deleteByIdAndRequestId(UUID id, UUID requestId);
+    boolean deleteByRequestId(UUID requestId);
+
+    boolean deleteByUserIdAndRequestId(UUID id, UUID requestId);
 }

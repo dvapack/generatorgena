@@ -104,7 +104,7 @@ public class JdbcGeneratedAssetRepository implements  GeneratedAssetRepository {
                     ga.created_at
                 from generated_assets ga
                 join generation_requests gr
-                  on gr.id = ga.request_id
+                    on gr.id = ga.request_id
                 where ga.request_id = :requestId
                   and gr.user_id = :userId
                 """)
@@ -115,12 +115,29 @@ public class JdbcGeneratedAssetRepository implements  GeneratedAssetRepository {
     }
 
     @Override
-    public boolean deleteByIdAndRequestId(UUID id, UUID requestId) {
+    public boolean deleteByRequestId(UUID requestId) {
         int affectedRows = jdbcClient.sql("""
                 delete from generated_assets
                 where request_id = :requestId
                 """)
                 .param("requestId", requestId)
+                .update();
+
+        return affectedRows == 1;
+    }
+
+    @Override
+    public boolean deleteByUserIdAndRequestId(UUID userId, UUID requestId) {
+        int affectedRows = jdbcClient.sql("""
+                delete
+                from generated_assets ga
+                using generation_requests gr
+                where gr.id = ga.request_id
+                  and gr.user_id = :userId 
+                  and ga.request_id = :requestId
+                """)
+                .param("requestId", requestId)
+                .param("userId", userId)
                 .update();
 
         return affectedRows == 1;
