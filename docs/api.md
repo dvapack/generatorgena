@@ -322,16 +322,9 @@ PUT метод для изменения оценки конкретной ге�
 
 ### response
 
-#### 200 OK
+#### 204 No content
 
-```json
-{
-  "generation": {
-    "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
-    "rating": 4
-  }
-}
-```
+Rating успешно обновился
 
 #### 400 Bad Request
 
