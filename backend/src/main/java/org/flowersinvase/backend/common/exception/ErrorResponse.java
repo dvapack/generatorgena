@@ -11,21 +11,21 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class ErrorResponse {
-    private int status;
+    private int code;
     private String message;
     private String path;
     private LocalDateTime timestamp;
     private List<String> errors;
 
-    public ErrorResponse(int status, String message, String path, List<String> errors) {
-        this.status = status;
+    public ErrorResponse(int code, String message, String path, List<String> errors) {
+        this.code = code;
         this.message = message;
         this.path = path;
         this.timestamp = LocalDateTime.now();
         this.errors = errors;
     }
 
-    public ErrorResponse(int status, String message, String path) {
-        this(status, message, path, List.of());
+    public ErrorResponse(int code, String message, String path) {
+        this(code, message, path, List.of());
     }
 }

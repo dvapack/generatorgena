@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Types;
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -112,6 +114,21 @@ public class JdbcGeneratedAssetRepository implements  GeneratedAssetRepository {
                 .param("userId", userId)
                 .query(ROW_MAPPER)
                 .optional();
+    }
+
+    @Override
+    public List<GeneratedAsset> findAllByRequestIds(Collection<UUID> requestIds) {
+        if (requestIds.isEmpty()) {
+            return List.of();
+        }
+        return jdbcClient.sql("""
+                select *
+                from generated_assets
+                where request_id in (:requestIds)
+                """)
+                .param("requestIds", requestIds)
+                .query(ROW_MAPPER)
+                .list();
     }
 
     @Override

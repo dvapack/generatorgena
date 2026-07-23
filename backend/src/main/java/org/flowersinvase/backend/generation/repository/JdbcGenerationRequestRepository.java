@@ -28,8 +28,8 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
                             resultSet.getString("status")
                     ),
                     resultSet.getObject("rating", Integer.class),
-                    resultSet.getObject("createdAt", OffsetDateTime.class),
-                    resultSet.getObject("completedAt", OffsetDateTime.class)
+                    resultSet.getObject("created_at", OffsetDateTime.class),
+                    resultSet.getObject("completed_at", OffsetDateTime.class)
             );
 
     private final JdbcClient jdbcClient;
@@ -129,7 +129,7 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
     }
 
     @Override
-    public Optional<GenerationRequest> findByIdAndUserId(UUID userId, UUID id) {
+    public Optional<GenerationRequest> findByIdAndUserId(UUID id, UUID userId) {
         return jdbcClient.sql("""
                 select
                     id,
@@ -191,5 +191,17 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
                 .param("userId", userId)
                 .update();
         return affectedRows == 1;
+    }
+
+    @Override
+    public long countByUserId(UUID userId) {
+        return jdbcClient.sql("""
+            select count(*)
+            from generation_requests
+            where user_id = :userId
+            """)
+                .param("userId", userId)
+                .query(Long.class)
+                .single();
     }
 }

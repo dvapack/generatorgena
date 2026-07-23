@@ -70,18 +70,18 @@ GenerationRequest 1 -> 0..1 GeneratedAsset
 
 Таблица результата генерации.
 
-| Поле        | Тип            | Ограничения           | Описание                                |
-|-------------|----------------|------------------------|-----------------------------------------|
-| id          | UUID           | PK                     | Идентификатор файла результата          |
-| requestId   | UUID           | FK, NOT NULL, UNIQUE   | Запрос генерации                        |
-| objectKey   | String         | NOT NULL, UNIQUE       | Ключ объекта в S3                       |
-| assetType   | ENUM           | NOT NULL               | Тип файла результата                    |
-| contentType | String         | NOT NULL               | MIME-тип файла, например `image/png`    |
-| sizeBytes   | Long           | NULL                   | Размер файла в байтах                   |
-| duration    | Integer        | NULL                   | Длительность в секундах для аудио/видео |
-| width       | Integer        | NULL                   | Ширина для изображения/видео            |
-| height      | Integer        | NULL                   | Высота для изображения/видео            |
-| createdAt   | LocalDateTime  | NOT NULL               | Дата создания записи                    |
+| Поле        | Тип           | Ограничения           | Описание                                |
+|-------------|---------------|------------------------|-----------------------------------------|
+| id          | UUID          | PK                     | Идентификатор файла результата          |
+| requestId   | UUID          | FK, NOT NULL, UNIQUE   | Запрос генерации                        |
+| objectKey   | String        | NOT NULL, UNIQUE       | Ключ объекта в S3                       |
+| assetType   | ENUM          | NOT NULL               | Тип файла результата                    |
+| contentType | String        | NOT NULL               | MIME-тип файла, например `image/png`    |
+| sizeBytes   | Integer       | NULL                   | Размер файла в байтах                   |
+| duration    | Integer       | NULL                   | Длительность в секундах для аудио/видео |
+| width       | Integer       | NULL                   | Ширина для изображения/видео            |
+| height      | Integer       | NULL                   | Высота для изображения/видео            |
+| createdAt   | LocalDateTime | NOT NULL               | Дата создания записи                    |
 
 ### asset_type
 

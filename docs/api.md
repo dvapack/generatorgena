@@ -40,7 +40,7 @@ POST метод для отправки запроса на генерацию.
 
 ```json
 {
-  "id": 1,
+  "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
   "type": "IMAGE",
   "status": "QUEUED"
 }
@@ -159,7 +159,7 @@ size=20
 {
   "generations": [
     {
-      "id": 1,
+      "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
       "type": "IMAGE",
       "prompt": "test_generation",
       "status": "COMPLETED",
@@ -167,13 +167,13 @@ size=20
       "createdAt": "2026-07-12T10:50:00+04:00",
       "completedAt": "2026-07-12T10:52:00+04:00",
       "asset": {
-        "id": 1,
+        "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
         "assetType": "IMAGE",
         "contentType": "image/png"
       }
     },
     {
-      "id": 2,
+      "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
       "type": "AUDIO",
       "prompt": "test_generation",
       "status": "QUEUED",
@@ -241,23 +241,21 @@ GET метод для получения конкретной генерации
 
 ```json
 {
-  "generation": {
-    "id": 1,
-    "type": "IMAGE",
-    "prompt": "test_generation",
-    "status": "COMPLETED",
-    "rating": 5,
-    "createdAt": "2026-07-12T10:50:00+04:00",
-    "completedAt": "2026-07-12T10:52:00+04:00",
-    "asset": {
-      "id": 1,
-      "assetType": "IMAGE",
-      "contentType": "image/png",
-      "width": 1024,
-      "height": 1024,
-      "duration": null,
-      "sizeBytes": 248193
-    }
+  "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "type": "IMAGE",
+  "prompt": "test_generation",
+  "status": "COMPLETED",
+  "rating": 5,
+  "createdAt": "2026-07-12T10:50:00+04:00",
+  "completedAt": "2026-07-12T10:52:00+04:00",
+  "asset": {
+    "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
+    "assetType": "IMAGE",
+    "contentType": "image/png",
+    "width": 1024,
+    "height": 1024,
+    "duration": null,
+    "sizeBytes": 248193
   }
 }
 ```
@@ -267,7 +265,7 @@ GET метод для получения конкретной генерации
 ```json
 {
   "generation": {
-    "id": 2,
+    "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
     "type": "VIDEO",
     "prompt": "test_generation",
     "status": "PROCESSING",
@@ -329,7 +327,7 @@ PUT метод для изменения оценки конкретной ге�
 ```json
 {
   "generation": {
-    "id": 1,
+    "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
     "rating": 4
   }
 }
@@ -461,7 +459,7 @@ Accept-Ranges: bytes
 ```json
 {
   "code": 400,
-  "message": "id должен быть целым числом"
+  "message": "id должен быть UUID"
 }
 ```
 
