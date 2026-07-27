@@ -2,6 +2,7 @@ package org.flowersinvase.backend.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.flowersinvase.backend.generation.exception.InvalidGenerationStateException;
+import org.flowersinvase.backend.generation.exception.MessageBrokerUnavailableException;
 import org.flowersinvase.backend.user.exception.EmailAlreadyExistsException;
 import org.flowersinvase.backend.user.exception.InvalidCredentialsException;
 import org.springframework.http.HttpStatus;
@@ -142,6 +143,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
+                .body(response);
+    }
+
+    @ExceptionHandler(MessageBrokerUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleBrokerUnavailable(
+            MessageBrokerUnavailableException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "Сервис генерации временно недоступен",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(response);
     }
 

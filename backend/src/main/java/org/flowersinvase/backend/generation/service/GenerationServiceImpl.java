@@ -8,6 +8,7 @@ import org.flowersinvase.backend.generation.entity.GenerationRequest;
 import org.flowersinvase.backend.generation.entity.GenerationStatus;
 import org.flowersinvase.backend.generation.exception.InvalidGenerationStateException;
 import org.flowersinvase.backend.generation.mapper.GenerationMapper;
+import org.flowersinvase.backend.generation.messaging.GenerationCommandPublisher;
 import org.flowersinvase.backend.generation.repository.GeneratedAssetRepository;
 import org.flowersinvase.backend.generation.repository.GenerationRequestRepository;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class GenerationServiceImpl implements GenerationService {
     private final GeneratedAssetRepository generatedAssetRepository;
     private final GenerationRequestRepository generationRequestRepository;
     private final GenerationMapper generationMapper;
+    private final GenerationCommandPublisher generationCommandPublisher;
 
     @Override
     @Transactional
@@ -34,6 +36,7 @@ public class GenerationServiceImpl implements GenerationService {
                 userId
         );
         GenerationRequest savedGeneration = generationRequestRepository.save(generation);
+        generationCommandPublisher.publish(savedGeneration);
         return generationMapper.toCreateGenerationResponse(savedGeneration);
     }
 

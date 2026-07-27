@@ -7,3 +7,32 @@ spring:
     password: secret
   flyway:
     enabled: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:myuser}
+    password: ${RABBITMQ_PASSWORD:secret}
+
+rabbitmq:
+  queue:
+    name: message_queue
+  queue_with_delay:
+    name: delay_queue
+
+app:
+  security:
+    jwt:
+      issuer: generatorgena
+      access-token-ttl: 15m
+      secret-base64: ${JWT_SECRET}
+
+  rabbitmq:
+    topology:
+      commands-exchange: ${GENERATION_COMMANDS_EXCHANGE:generation.commands}
+      events-exchange: ${GENERATION_EVENTS_EXCHANGE:generation.events}
+
+      requests-queue: ${GENERATION_REQUESTS_QUEUE:generation.requests}
+      results-queue: ${GENERATION_RESULTS_QUEUE:generation.results}
+
+      generate-routing-key: ${GENERATION_GENERATE_ROUTING_KEY:generation.generate}
+      events-routing-pattern: ${GENERATION_EVENTS_ROUTING_PATTERN:generation.*}
