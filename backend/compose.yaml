@@ -1,26 +1,206 @@
+name: generatorgena
+
 services:
   backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
     environment:
-      JWT_SECRET: ${JWT_SECRET}
-  postgres:
-    image: 'postgres:latest'
-    environment:
-      - 'POSTGRES_DB=gena'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-gena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-myuser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-myuser}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-secret}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in backend/.env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
-      - '5432'
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:4-management
+      - "8080:8080"
+    init: true
+    restart: unless-stopped
+
+  ml-service:
+    build:
+      context: ../ml_service
+      dockerfile: Dockerfile
+      target: runtime
+    environment: &ml-environment
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-myuser}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-secret}
+      GENERATION_COMMANDS_EXCHANGE: generation.commands
+      GENERATION_EVENTS_EXCHANGE: generation.events
+      GENERATION_REQUESTS_QUEUE: generation.requests
+      GENERATION_RESULTS_QUEUE: generation.results
+      GENERATION_GENERATE_ROUTING_KEY: generation.generate
+      GENERATION_EVENTS_ROUTING_PATTERN: generation.*
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_WORKER_ACCESS_KEY:?Set MINIO_WORKER_ACCESS_KEY in backend/.env}
+      MINIO_SECRET_KEY: ${MINIO_WORKER_SECRET_KEY:?Set MINIO_WORKER_SECRET_KEY in backend/.env}
+      MINIO_BUCKET: ${MINIO_BUCKET:-generated-assets}
+      MINIO_SECURE: "false"
+      MODEL_CHECKPOINT_PATH: /app/Generator_70.pt
+      CLIP_MODEL_NAME: openai/clip-vit-base-patch32
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    ports:
+      - "${ML_SERVICE_PORT:-5001}:5000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:5000/health/ready', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      start_period: 5m
+      retries: 5
+    init: true
+    restart: unless-stopped
+
+  ml-tests:
+    profiles:
+      - test
+    build:
+      context: ../ml_service
+      dockerfile: Dockerfile
+      target: test
     environment:
-      RABBITMQ_DEFAULT_USER: myuser
-      RABBITMQ_DEFAULT_PASS: secret
+      <<: *ml-environment
+      GENERATION_REQUESTS_QUEUE: generation.requests.test
+      GENERATION_RESULTS_QUEUE: generation.results.test
+      RUN_INTEGRATION_TESTS: "1"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    init: true
+    restart: "no"
+
+  postgres:
+    image: postgres:17.10-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gena}
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4.1.8-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-myuser}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-secret}
     ports:
       - "5672:5672"
       - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      test:
+        - CMD
+        - rabbitmq-diagnostics
+        - -q
+        - ping
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command:
+      - server
+      - /data
+      - --console-address
+      - :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in backend/.env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in backend/.env}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - --fail
+        - http://localhost:9000/minio/health/live
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  minio-init:
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    entrypoint:
+      - /bin/sh
+      - -c
+    command:
+      - |
+        set -eu
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
+        mc mb --ignore-existing "local/$${MINIO_BUCKET}"
+        mc anonymous set none "local/$${MINIO_BUCKET}"
+
+        cat > /tmp/ml-worker-policy.json <<EOF
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["s3:GetBucketLocation", "s3:ListBucket"],
+              "Resource": ["arn:aws:s3:::$${MINIO_BUCKET}"]
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+              "Resource": ["arn:aws:s3:::$${MINIO_BUCKET}/*"]
+            }
+          ]
+        }
+        EOF
+
+        mc admin user add local "$${MINIO_WORKER_ACCESS_KEY}" "$${MINIO_WORKER_SECRET_KEY}" ||
+          mc admin user info local "$${MINIO_WORKER_ACCESS_KEY}"
+        mc admin policy create local ml-worker-policy /tmp/ml-worker-policy.json ||
+          mc admin policy info local ml-worker-policy
+        mc admin policy attach local ml-worker-policy --user "$${MINIO_WORKER_ACCESS_KEY}"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in backend/.env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in backend/.env}
+      MINIO_WORKER_ACCESS_KEY: ${MINIO_WORKER_ACCESS_KEY:?Set MINIO_WORKER_ACCESS_KEY in backend/.env}
+      MINIO_WORKER_SECRET_KEY: ${MINIO_WORKER_SECRET_KEY:?Set MINIO_WORKER_SECRET_KEY in backend/.env}
+      MINIO_BUCKET: ${MINIO_BUCKET:-generated-assets}
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  minio-data:

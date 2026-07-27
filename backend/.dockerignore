@@ -1,0 +1,8 @@
+.env
+.gradle
+.idea
+build
+*.iml
+*.log
+HELP.md
+compose.yaml
