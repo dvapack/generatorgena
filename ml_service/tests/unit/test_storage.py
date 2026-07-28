@@ -2,8 +2,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from generatorgena_ml.generation.generator import GeneratedImage
-from generatorgena_ml.storage.minio import MinioStorage, StorageError
+from generatorgena_ml.exception import AssetStorageError
+from generatorgena_ml.model import GeneratedImage
+from generatorgena_ml.repository import MinioGeneratedAssetRepository
 
 
 @pytest.fixture
@@ -19,9 +20,9 @@ def image() -> GeneratedImage:
 
 async def test_put_image_uses_minio_sdk(image: GeneratedImage) -> None:
     client = MagicMock()
-    storage = MinioStorage(client=client, bucket="generated-assets")
+    storage = MinioGeneratedAssetRepository(client=client, bucket="generated-assets")
 
-    await storage.put_image("images/requests/id/result.png", image)
+    await storage.save("images/requests/id/result.png", image)
 
     args, kwargs = client.put_object.call_args
     assert args[0] == "generated-assets"
@@ -37,13 +38,20 @@ async def test_put_image_retries_transient_errors(
 ) -> None:
     client = MagicMock()
     client.put_object.side_effect = [OSError("down"), OSError("down"), object()]
-    storage = MinioStorage(client=client, bucket="generated-assets", max_attempts=3)
+    storage = MinioGeneratedAssetRepository(
+        client=client,
+        bucket="generated-assets",
+        max_attempts=3,
+    )
 
     async def no_sleep(_: float) -> None:
         return None
 
-    monkeypatch.setattr("generatorgena_ml.storage.minio.asyncio.sleep", no_sleep)
-    await storage.put_image("images/requests/id/result.png", image)
+    monkeypatch.setattr(
+        "generatorgena_ml.repository.minio_generated_asset_repository.asyncio.sleep",
+        no_sleep,
+    )
+    await storage.save("images/requests/id/result.png", image)
 
     assert client.put_object.call_count == 3
 
@@ -54,25 +62,34 @@ async def test_put_image_raises_after_retry_limit(
 ) -> None:
     client = MagicMock()
     client.put_object.side_effect = OSError("down")
-    storage = MinioStorage(client=client, bucket="generated-assets", max_attempts=3)
+    storage = MinioGeneratedAssetRepository(
+        client=client,
+        bucket="generated-assets",
+        max_attempts=3,
+    )
 
     async def no_sleep(_: float) -> None:
         return None
 
-    monkeypatch.setattr("generatorgena_ml.storage.minio.asyncio.sleep", no_sleep)
+    monkeypatch.setattr(
+        "generatorgena_ml.repository.minio_generated_asset_repository.asyncio.sleep",
+        no_sleep,
+    )
 
-    with pytest.raises(StorageError) as error:
-        await storage.put_image("images/requests/id/result.png", image)
+    with pytest.raises(AssetStorageError) as error:
+        await storage.save("images/requests/id/result.png", image)
 
     assert error.value.retryable is True
-    assert str(error.value) == "Не удалось загрузить сгенерированное изображение в MinIO"
+    assert str(error.value) == (
+        "Не удалось загрузить сгенерированное изображение в MinIO"
+    )
     assert client.put_object.call_count == 3
 
 
 async def test_readiness_requires_existing_bucket() -> None:
     client = MagicMock()
     client.bucket_exists.return_value = True
-    storage = MinioStorage(client=client, bucket="generated-assets")
+    storage = MinioGeneratedAssetRepository(client=client, bucket="generated-assets")
 
     assert await storage.is_ready() is True
     client.bucket_exists.assert_called_once_with("generated-assets")

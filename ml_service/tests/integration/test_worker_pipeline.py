@@ -8,25 +8,31 @@ import aio_pika
 import pytest
 from PIL import Image
 
-from generatorgena_ml.config import Settings
-from generatorgena_ml.generation.generator import GeneratedImage
-from generatorgena_ml.messaging.rabbitmq import RabbitMessaging
-from generatorgena_ml.storage.minio import MinioStorage
-from generatorgena_ml.worker import GenerationWorker
-
+from generatorgena_ml.configuration.settings import ApplicationSettings
+from generatorgena_ml.controller import RabbitGenerationCommandController
+from generatorgena_ml.mapper import GenerationMessageMapper
+from generatorgena_ml.messaging.rabbit_generation_event_publisher import (
+    RabbitGenerationEventPublisher,
+)
+from generatorgena_ml.messaging.rabbitmq_manager import RabbitMqManager
+from generatorgena_ml.model import GeneratedImage
+from generatorgena_ml.repository import MinioGeneratedAssetRepository
+from generatorgena_ml.service import GenerationService
 
 pytestmark = pytest.mark.integration
 
 
 class FakeGenerator:
-    def generate_from_text(self, prompt: str) -> GeneratedImage:
+    async def generate(self, prompt: str) -> GeneratedImage:
         buffer = BytesIO()
         Image.new("RGB", (64, 64), color="green").save(buffer, format="PNG")
         data = buffer.getvalue()
         return GeneratedImage(data, "image/png", len(data), 64, 64)
 
 
-async def wait_for_message(queue: aio_pika.abc.AbstractQueue) -> aio_pika.IncomingMessage:
+async def wait_for_message(
+    queue: aio_pika.abc.AbstractQueue,
+) -> aio_pika.IncomingMessage:
     deadline = asyncio.get_running_loop().time() + 20
     while asyncio.get_running_loop().time() < deadline:
         message = await queue.get(fail=False, timeout=5)
@@ -42,16 +48,19 @@ async def wait_for_message(queue: aio_pika.abc.AbstractQueue) -> aio_pika.Incomi
 )
 async def test_rabbit_command_creates_minio_object() -> None:
     queue_suffix = uuid4().hex
-    settings = Settings(
+    settings = ApplicationSettings(
         generation_requests_queue=f"generation.requests.test.{queue_suffix}",
         generation_results_queue=f"generation.results.test.{queue_suffix}",
         generation_generate_routing_key=f"generation.generate.test.{queue_suffix}",
     )
-    storage = MinioStorage.from_settings(settings)
-    await storage.ensure_ready()
-    messaging = RabbitMessaging(settings)
-    worker = GenerationWorker(FakeGenerator(), storage, messaging)
-    await messaging.start(worker.handle)
+    repository = MinioGeneratedAssetRepository.from_properties(settings.minio)
+    await repository.ensure_ready()
+    mapper = GenerationMessageMapper()
+    rabbitmq = RabbitMqManager(settings.rabbitmq)
+    publisher = RabbitGenerationEventPublisher(rabbitmq, mapper)
+    service = GenerationService(FakeGenerator(), repository, publisher)
+    controller = RabbitGenerationCommandController(service, mapper)
+    await rabbitmq.start(controller.handle)
 
     connection = await aio_pika.connect_robust(
         host=settings.rabbitmq_host,
@@ -60,7 +69,9 @@ async def test_rabbit_command_creates_minio_object() -> None:
         password=settings.rabbitmq_password,
     )
     channel = await connection.channel()
-    commands_exchange = await channel.get_exchange(settings.generation_commands_exchange)
+    commands_exchange = await channel.get_exchange(
+        settings.generation_commands_exchange
+    )
     results_queue = await channel.get_queue(settings.generation_results_queue)
     requests_queue = await channel.get_queue(settings.generation_requests_queue)
 
@@ -96,7 +107,7 @@ async def test_rabbit_command_creates_minio_object() -> None:
         assert object_key == f"images/requests/{generation_id}/result.png"
 
         response = await asyncio.to_thread(
-            storage._client.get_object,  # noqa: SLF001 - integration verification
+            repository._client.get_object,
             settings.minio_bucket,
             object_key,
         )
@@ -109,11 +120,11 @@ async def test_rabbit_command_creates_minio_object() -> None:
     finally:
         if object_key is not None:
             await asyncio.to_thread(
-                storage._client.remove_object,  # noqa: SLF001
+                repository._client.remove_object,
                 settings.minio_bucket,
                 object_key,
             )
-        await messaging.close()
+        await rabbitmq.close()
         await requests_queue.delete(if_unused=False, if_empty=False)
         await results_queue.delete(if_unused=False, if_empty=False)
         await connection.close()

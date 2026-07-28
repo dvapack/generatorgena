@@ -36,3 +36,13 @@ app:
 
       generate-routing-key: ${GENERATION_GENERATE_ROUTING_KEY:generation.generate}
       events-routing-pattern: ${GENERATION_EVENTS_ROUTING_PATTERN:generation.*}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health

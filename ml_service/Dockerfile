@@ -30,7 +30,7 @@ USER app
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=120s --retries=5 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=5m --retries=5 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health/ready', timeout=3)"]
 
 CMD ["uvicorn", "generatorgena_ml.main:app", "--host", "0.0.0.0", "--port", "5000"]
@@ -41,7 +41,8 @@ USER root
 COPY requirements-test.txt .
 RUN pip install --no-cache-dir -r requirements-test.txt
 COPY --chown=app:app pytest.ini .
+COPY --chown=app:app pyproject.toml .
 COPY --chown=app:app tests ./tests
 USER app
 
-CMD ["pytest", "-q"]
+CMD ["sh", "-c", "ruff check src tests && ruff format --check src tests && mypy src && pytest -q"]

@@ -88,6 +88,7 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/users/register",

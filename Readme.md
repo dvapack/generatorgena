@@ -4,8 +4,6 @@
 
 **Тема проекта:** *Гена* - генератор изображений по текстовому описанию.
 
-**Авторы проекта:** Иванова Дарья, Мещеряков Сергей
-
 ---
 ## **Screenshots**
 
@@ -21,21 +19,25 @@
 ---
 
 
-## **Распределение обязанностей:**
-
-**Иванова Дарья:** api (methods), devops (docker compose), frontend
-
-**Мещеряков Сергей:** backend, ml, mlops (a bit), frontend v2
-
 ## **Стек:**
 
-1. RestAPI
-2. FastAPI, Django, PyTorch
-3. Docker
-4. React
+1. Spring Boot, FastAPI, PyTorch
+2. PostgreSQL, RabbitMQ, MinIO
+3. React
+4. Docker Compose
 
-## **To DO:**
+## **Запуск**
 
-1. Clean code
-2. ~~Update frontend to match figma~~
-3. Better GAN model
+В проекте используется единый Compose-файл в корневой директории:
+
+```shell
+docker compose up --build --detach
+```
+
+После запуска frontend доступен на `http://localhost:3000`, backend — на
+`http://localhost:8080`, ML health API — на
+`http://localhost:5001/health/ready`.
+
+Переменные окружения, тестовый профиль и команды остановки описаны в
+[документации Docker](docs/docker.md).
+
