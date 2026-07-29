@@ -48,11 +48,17 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-secret}
       JWT_SECRET: ${JWT_SECRET:-ZGV2ZWxvcG1lbnQtb25seS1qd3Qtc2VjcmV0LW11c3QtYmUtMzItYnl0ZXM=}
       SPRING_DOCKER_COMPOSE_ENABLED: "false"
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_BACKEND_ACCESS_KEY:-backend}
+      MINIO_SECRET_KEY: ${MINIO_BACKEND_SECRET_KEY:-backend-secret}
+      MINIO_BUCKET: ${MINIO_BUCKET:-generated-assets}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     init: true
@@ -175,11 +181,37 @@ services:
         mc admin policy create local ml-worker-policy /tmp/ml-worker-policy.json ||
           mc admin policy info local ml-worker-policy
         mc admin policy attach local ml-worker-policy --user "$${MINIO_WORKER_ACCESS_KEY}"
+
+        cat > /tmp/backend-policy.json <<EOF
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["s3:GetBucketLocation"],
+              "Resource": ["arn:aws:s3:::$${MINIO_BUCKET}"]
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["s3:GetObject", "s3:DeleteObject"],
+              "Resource": ["arn:aws:s3:::$${MINIO_BUCKET}/*"]
+            }
+          ]
+        }
+        EOF
+
+        mc admin user add local "$${MINIO_BACKEND_ACCESS_KEY}" "$${MINIO_BACKEND_SECRET_KEY}" ||
+          mc admin user info local "$${MINIO_BACKEND_ACCESS_KEY}"
+        mc admin policy create local backend-policy /tmp/backend-policy.json ||
+          mc admin policy info local backend-policy
+        mc admin policy attach local backend-policy --user "$${MINIO_BACKEND_ACCESS_KEY}"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin-secret}
       MINIO_WORKER_ACCESS_KEY: ${MINIO_WORKER_ACCESS_KEY:-mlworker}
       MINIO_WORKER_SECRET_KEY: ${MINIO_WORKER_SECRET_KEY:-mlworker-secret}
+      MINIO_BACKEND_ACCESS_KEY: ${MINIO_BACKEND_ACCESS_KEY:-backend}
+      MINIO_BACKEND_SECRET_KEY: ${MINIO_BACKEND_SECRET_KEY:-backend-secret}
       MINIO_BUCKET: ${MINIO_BUCKET:-generated-assets}
     depends_on:
       minio:

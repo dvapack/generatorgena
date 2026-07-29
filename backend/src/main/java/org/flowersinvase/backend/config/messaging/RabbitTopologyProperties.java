@@ -1,4 +1,4 @@
-package org.flowersinvase.backend.generation.messaging;
+package org.flowersinvase.backend.config.messaging;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;

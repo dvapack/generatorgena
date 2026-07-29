@@ -1,11 +1,11 @@
-package org.flowersinvase.backend.generation.messaging;
+package org.flowersinvase.backend.generation.messaging.publisher;
 
 import lombok.RequiredArgsConstructor;
-import org.flowersinvase.backend.generation.entity.GenerationRequest;
-import org.flowersinvase.backend.generation.exception.MessageBrokerUnavailableException;
+import org.flowersinvase.backend.generation.entity.Generation;
+import org.flowersinvase.backend.exception.exceptions.messaging.MessageBrokerUnavailableException;
+import org.flowersinvase.backend.generation.messaging.dto.GenerateContentCommand;
+import org.flowersinvase.backend.config.messaging.RabbitTopologyProperties;
 import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.core.MessageDeliveryMode;
-import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ public class RabbitGenerationCommandPublisher implements GenerationCommandPublis
     private final RabbitTopologyProperties properties;
 
     @Override
-    public void publish(GenerationRequest generation) {
+    public void publish(Generation generation) {
         GenerateContentCommand command = new GenerateContentCommand(
                 UUID.ofEpochMillis(System.currentTimeMillis()),
                 generation.id(),

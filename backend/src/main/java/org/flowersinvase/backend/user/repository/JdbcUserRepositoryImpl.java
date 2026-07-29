@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class JdbcUserRepository implements UserRepository {
+public class JdbcUserRepositoryImpl implements UserRepository {
 
     private static final RowMapper<User> ROW_MAPPER =
             (resultSet, rowNumber) -> new User(
@@ -20,7 +20,7 @@ public class JdbcUserRepository implements UserRepository {
 
     private final JdbcClient jdbcClient;
 
-    public JdbcUserRepository(JdbcClient jdbcClient) {
+    public JdbcUserRepositoryImpl(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 

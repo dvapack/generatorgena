@@ -1,4 +1,4 @@
-package org.flowersinvase.backend.security;
+package org.flowersinvase.backend.config.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

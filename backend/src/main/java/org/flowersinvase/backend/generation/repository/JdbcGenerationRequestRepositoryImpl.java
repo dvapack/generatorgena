@@ -1,6 +1,6 @@
 package org.flowersinvase.backend.generation.repository;
 
-import org.flowersinvase.backend.generation.entity.GenerationRequest;
+import org.flowersinvase.backend.generation.entity.Generation;
 import org.flowersinvase.backend.generation.entity.GenerationStatus;
 import org.flowersinvase.backend.generation.entity.GenerationType;
 import org.springframework.jdbc.core.RowMapper;
@@ -14,10 +14,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class JdbcGenerationRequestRepository implements GenerationRequestRepository {
+public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRepository {
 
-    private final static RowMapper<GenerationRequest> ROW_MAPPER =
-            (resultSet, rowNum) -> new GenerationRequest(
+    private final static RowMapper<Generation> ROW_MAPPER =
+            (resultSet, rowNum) -> new Generation(
                     resultSet.getObject("id", UUID.class),
                     resultSet.getObject("user_id", UUID.class),
                     resultSet.getString("prompt"),
@@ -34,12 +34,12 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
 
     private final JdbcClient jdbcClient;
 
-    public JdbcGenerationRequestRepository(JdbcClient jdbcClient) {
+    public JdbcGenerationRequestRepositoryImpl(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 
     @Override
-    public GenerationRequest save(GenerationRequest generationRequest) {
+    public Generation save(Generation generation) {
         return jdbcClient.sql("""
                 insert into generation_requests (
                     id,
@@ -71,20 +71,20 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
                     created_at,
                     completed_at
                 """)
-                .param("id", generationRequest.id())
-                .param("userId", generationRequest.userId())
-                .param("prompt", generationRequest.prompt())
-                .param("type", generationRequest.type().name())
-                .param("status", generationRequest.status().name())
-                .param("rating", generationRequest.rating(), Types.INTEGER)
-                .param("createdAt", generationRequest.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
-                .param("completedAt", generationRequest.completedAt(), Types.TIMESTAMP_WITH_TIMEZONE)
+                .param("id", generation.id())
+                .param("userId", generation.userId())
+                .param("prompt", generation.prompt())
+                .param("type", generation.type().name())
+                .param("status", generation.status().name())
+                .param("rating", generation.rating(), Types.INTEGER)
+                .param("createdAt", generation.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
+                .param("completedAt", generation.completedAt(), Types.TIMESTAMP_WITH_TIMEZONE)
                 .query(ROW_MAPPER)
                 .single();
     }
 
     @Override
-    public List<GenerationRequest> findAllByUserId(UUID userId, int offset, int limit) {
+    public List<Generation> findAllByUserId(UUID userId, int offset, int limit) {
         return jdbcClient.sql("""
                 select
                     id,
@@ -109,7 +109,7 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
     }
 
     @Override
-    public Optional<GenerationRequest> findById(UUID id) {
+    public Optional<Generation> findById(UUID id) {
         return jdbcClient.sql("""
                 select
                     id,
@@ -129,7 +129,7 @@ public class JdbcGenerationRequestRepository implements GenerationRequestReposit
     }
 
     @Override
-    public Optional<GenerationRequest> findByIdAndUserId(UUID id, UUID userId) {
+    public Optional<Generation> findByIdAndUserId(UUID id, UUID userId) {
         return jdbcClient.sql("""
                 select
                     id,

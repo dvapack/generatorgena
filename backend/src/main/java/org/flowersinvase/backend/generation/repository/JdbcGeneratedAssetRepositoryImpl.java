@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class JdbcGeneratedAssetRepository implements  GeneratedAssetRepository {
+public class JdbcGeneratedAssetRepositoryImpl implements  GeneratedAssetRepository {
 
     private static final RowMapper<GeneratedAsset> ROW_MAPPER =
             (resultSet, rowNumber) -> new GeneratedAsset(
@@ -32,7 +32,7 @@ public class JdbcGeneratedAssetRepository implements  GeneratedAssetRepository {
 
     private final JdbcClient jdbcClient;
 
-    public JdbcGeneratedAssetRepository(JdbcClient jdbcClient) {
+    public JdbcGeneratedAssetRepositoryImpl(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
     }
 

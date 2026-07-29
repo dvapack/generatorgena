@@ -6,7 +6,8 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.flowersinvase.backend.generation.dto.*;
 import org.flowersinvase.backend.generation.service.GenerationService;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -58,6 +59,27 @@ public class GenerationController {
     ) {
         UUID userId = UUID.fromString(jwt.getSubject());
         generationService.updateRating(userId, generationId, updateGenerationRatingRequest);
+    }
+
+    @GetMapping("/{id}/asset")
+    public ResponseEntity<InputStreamResource> download(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("id") UUID generationId
+    ) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        DownloadedAsset asset = generationService.download(userId, generationId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(asset.contentType()))
+                .contentLength(asset.contentLength())
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline()
+                                .filename(asset.filename())
+                                .build()
+                                .toString()
+                )
+                .body(new InputStreamResource(asset.content()));
     }
 
     @DeleteMapping("/{id}")

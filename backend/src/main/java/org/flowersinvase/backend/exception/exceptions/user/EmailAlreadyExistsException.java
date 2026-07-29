@@ -1,4 +1,4 @@
-package org.flowersinvase.backend.user.exception;
+package org.flowersinvase.backend.exception.exceptions.user;
 
 public class EmailAlreadyExistsException extends RuntimeException {
 

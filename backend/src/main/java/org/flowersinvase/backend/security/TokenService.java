@@ -1,6 +1,7 @@
 package org.flowersinvase.backend.security;
 
 import lombok.RequiredArgsConstructor;
+import org.flowersinvase.backend.config.security.JwtProperties;
 import org.flowersinvase.backend.user.dto.LoginResponse;
 import org.flowersinvase.backend.user.entity.User;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;

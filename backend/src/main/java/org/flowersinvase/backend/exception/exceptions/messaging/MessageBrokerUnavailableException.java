@@ -1,4 +1,4 @@
-package org.flowersinvase.backend.generation.exception;
+package org.flowersinvase.backend.exception.exceptions.messaging;
 
 public class MessageBrokerUnavailableException
         extends RuntimeException {

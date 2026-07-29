@@ -1,10 +1,13 @@
-package org.flowersinvase.backend.common.exception;
+package org.flowersinvase.backend.exception.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.flowersinvase.backend.generation.exception.InvalidGenerationStateException;
-import org.flowersinvase.backend.generation.exception.MessageBrokerUnavailableException;
-import org.flowersinvase.backend.user.exception.EmailAlreadyExistsException;
-import org.flowersinvase.backend.user.exception.InvalidCredentialsException;
+import org.flowersinvase.backend.exception.ErrorResponse;
+import org.flowersinvase.backend.exception.exceptions.common.ResourceNotFoundException;
+import org.flowersinvase.backend.exception.exceptions.storage.StorageUnavailableException;
+import org.flowersinvase.backend.exception.exceptions.generation.InvalidGenerationStateException;
+import org.flowersinvase.backend.exception.exceptions.messaging.MessageBrokerUnavailableException;
+import org.flowersinvase.backend.exception.exceptions.user.EmailAlreadyExistsException;
+import org.flowersinvase.backend.exception.exceptions.user.InvalidCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -154,6 +157,22 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                 "Сервис генерации временно недоступен",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(response);
+    }
+
+    @ExceptionHandler(StorageUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleStorageUnavailable(
+            StorageUnavailableException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                exception.getMessage(),
                 request.getRequestURI()
         );
 

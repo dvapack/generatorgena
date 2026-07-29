@@ -1,4 +1,4 @@
-package org.flowersinvase.backend.common.exception;
+package org.flowersinvase.backend.exception.exceptions.common;
 
 public class ResourceNotFoundException extends RuntimeException{
 

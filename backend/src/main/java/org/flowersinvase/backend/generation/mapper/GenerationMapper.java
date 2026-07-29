@@ -1,8 +1,9 @@
 package org.flowersinvase.backend.generation.mapper;
 
+import jakarta.validation.constraints.NotNull;
 import org.flowersinvase.backend.generation.dto.*;
 import org.flowersinvase.backend.generation.entity.GeneratedAsset;
-import org.flowersinvase.backend.generation.entity.GenerationRequest;
+import org.flowersinvase.backend.generation.entity.Generation;
 import org.flowersinvase.backend.generation.entity.GenerationStatus;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +15,8 @@ import java.util.stream.Collectors;
 @Component
 public class GenerationMapper {
 
-    public GenerationRequest toGenerationRequestEntity(CreateGenerationRequest request, UUID generationId, UUID userId) {
-        return new GenerationRequest(
+    public Generation toGenerationRequestEntity(CreateGenerationRequest request, UUID generationId, UUID userId) {
+        return new Generation(
                 generationId,
                 userId,
                 request.prompt(),
@@ -28,7 +29,7 @@ public class GenerationMapper {
     }
 
     public GenerationResponse toGenerationResponse(
-            GenerationRequest generation,
+            @NotNull Generation generation,
             GeneratedAsset asset
     ) {
         return new GenerationResponse(
@@ -43,11 +44,11 @@ public class GenerationMapper {
         );
     }
 
-    public CreateGenerationResponse toCreateGenerationResponse(GenerationRequest generationRequest) {
+    public CreateGenerationResponse toCreateGenerationResponse(Generation generation) {
         return new CreateGenerationResponse(
-                generationRequest.id(),
-                generationRequest.type(),
-                generationRequest.status()
+                generation.id(),
+                generation.type(),
+                generation.status()
         );
     }
 
@@ -67,7 +68,7 @@ public class GenerationMapper {
     }
 
     public GenerationPageResponse toGenerationPageResponse(
-            List<GenerationRequest> generationRequests,
+            List<Generation> generations,
             List<GeneratedAsset> generatedAssets,
             int page,
             int size,
@@ -80,7 +81,7 @@ public class GenerationMapper {
                                 generatedAsset -> generatedAsset
                         ));
         List<GenerationResponse> generationResponses =
-                generationRequests.stream()
+                generations.stream()
                         .map(generation -> toGenerationResponse(
                                 generation,
                                 assetsByRequestId.get(
@@ -88,11 +89,6 @@ public class GenerationMapper {
                                 )
                         ))
                         .toList();
-        return new GenerationPageResponse(
-                generationResponses,
-                page,
-                size,
-                total
-        );
+        return new GenerationPageResponse(generationResponses, page, size, total);
     }
 }

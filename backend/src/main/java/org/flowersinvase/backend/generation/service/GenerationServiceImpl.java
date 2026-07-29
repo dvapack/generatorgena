@@ -1,16 +1,17 @@
 package org.flowersinvase.backend.generation.service;
 
 import lombok.RequiredArgsConstructor;
-import org.flowersinvase.backend.common.exception.ResourceNotFoundException;
+import org.flowersinvase.backend.exception.exceptions.common.ResourceNotFoundException;
 import org.flowersinvase.backend.generation.dto.*;
 import org.flowersinvase.backend.generation.entity.GeneratedAsset;
-import org.flowersinvase.backend.generation.entity.GenerationRequest;
+import org.flowersinvase.backend.generation.entity.Generation;
 import org.flowersinvase.backend.generation.entity.GenerationStatus;
-import org.flowersinvase.backend.generation.exception.InvalidGenerationStateException;
+import org.flowersinvase.backend.exception.exceptions.generation.InvalidGenerationStateException;
 import org.flowersinvase.backend.generation.mapper.GenerationMapper;
-import org.flowersinvase.backend.generation.messaging.GenerationCommandPublisher;
+import org.flowersinvase.backend.generation.messaging.publisher.GenerationCommandPublisher;
 import org.flowersinvase.backend.generation.repository.GeneratedAssetRepository;
 import org.flowersinvase.backend.generation.repository.GenerationRequestRepository;
+import org.flowersinvase.backend.generation.storage.service.StorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,22 +26,23 @@ public class GenerationServiceImpl implements GenerationService {
     private final GenerationRequestRepository generationRequestRepository;
     private final GenerationMapper generationMapper;
     private final GenerationCommandPublisher generationCommandPublisher;
+    private final StorageService storageService;
 
     @Override
     @Transactional
     public CreateGenerationResponse create(UUID userId, CreateGenerationRequest request) {
         UUID generationId = UUID.ofEpochMillis(System.currentTimeMillis());
-        GenerationRequest generation = generationMapper.toGenerationRequestEntity(
+        Generation generation = generationMapper.toGenerationRequestEntity(
                 request,
                 generationId,
                 userId
         );
-        GenerationRequest savedGeneration = generationRequestRepository.save(generation);
+        Generation savedGeneration = generationRequestRepository.save(generation);
         generationCommandPublisher.publish(savedGeneration);
         return generationMapper.toCreateGenerationResponse(savedGeneration);
     }
 
-    private GenerationRequest findGenerationById(UUID userId, UUID generationId) {
+    private Generation findGenerationById(UUID userId, UUID generationId) {
         return generationRequestRepository.findByIdAndUserId(generationId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Генерация с данным id не найдена"));
     }
@@ -53,7 +55,7 @@ public class GenerationServiceImpl implements GenerationService {
     @Override
     @Transactional(readOnly = true)
     public GenerationResponse getById(UUID userId, UUID generationId) {
-        GenerationRequest generation = findGenerationById(userId, generationId);
+        Generation generation = findGenerationById(userId, generationId);
         GeneratedAsset asset = findAssetByGenerationId(userId, generationId);
         return generationMapper.toGenerationResponse(generation, asset);
     }
@@ -61,7 +63,7 @@ public class GenerationServiceImpl implements GenerationService {
     @Override
     @Transactional
     public void updateRating(UUID userId, UUID generationId, UpdateGenerationRatingRequest request) {
-        GenerationRequest generation = findGenerationById(userId, generationId);
+        Generation generation = findGenerationById(userId, generationId);
         if (generation.status() != GenerationStatus.COMPLETED) {
             throw new InvalidGenerationStateException("Нельзя оценить незавершённую генерацию");
         }
@@ -75,9 +77,9 @@ public class GenerationServiceImpl implements GenerationService {
     @Transactional(readOnly = true)
     public GenerationPageResponse getPage(UUID userId, int page, int size) {
         int offset = Math.multiplyExact(page, size);
-        List<GenerationRequest> requests = generationRequestRepository.findAllByUserId(userId, offset, size);
+        List<Generation> requests = generationRequestRepository.findAllByUserId(userId, offset, size);
         List<UUID> requestIds = requests.stream()
-                .map(GenerationRequest::id)
+                .map(Generation::id)
                 .toList();
         List<GeneratedAsset> assets = generatedAssetRepository.findAllByRequestIds(requestIds);
         long total = generationRequestRepository.countByUserId(userId);
@@ -85,8 +87,27 @@ public class GenerationServiceImpl implements GenerationService {
     }
 
     @Override
+    public DownloadedAsset download(UUID userId, UUID generationId) {
+        GeneratedAsset asset = generatedAssetRepository
+                .findByUserIdAndRequestId(userId, generationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Файл генерации не найден"));
+        var stream = storageService.get(asset.objectKey());
+        String filename = "generation-" + asset.requestId() + ".png";
+        return new DownloadedAsset(
+                stream,
+                asset.contentType(),
+                asset.sizeBytes(),
+                filename);
+    }
+
+    @Override
     @Transactional
     public void delete(UUID userId, UUID generationId) {
+        findGenerationById(userId, generationId);
+        GeneratedAsset asset = findAssetByGenerationId(userId, generationId);
+        if (asset != null) {
+            storageService.delete(asset.objectKey());
+        }
         boolean deleted = generationRequestRepository.deleteByUserAndId(userId, generationId);
         if (!deleted) {
             throw new ResourceNotFoundException("Генерация с данным id не найдена");

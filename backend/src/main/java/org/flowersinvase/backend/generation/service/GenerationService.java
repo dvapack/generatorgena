@@ -16,5 +16,7 @@ public interface GenerationService {
 
     GenerationPageResponse getPage(UUID userId, int page, int size);
 
+    DownloadedAsset download(UUID userId, UUID generationId);
+
     void delete(UUID userId, UUID generationId);
 }

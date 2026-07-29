@@ -13,6 +13,6 @@ public record GeneratedAsset(
         Integer duration,
         Integer width,
         Integer height,
-         OffsetDateTime createdAt
+        OffsetDateTime createdAt
 ) {
 }

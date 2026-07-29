@@ -13,12 +13,6 @@ spring:
     username: ${RABBITMQ_USERNAME:myuser}
     password: ${RABBITMQ_PASSWORD:secret}
 
-rabbitmq:
-  queue:
-    name: message_queue
-  queue_with_delay:
-    name: delay_queue
-
 app:
   security:
     jwt:
@@ -36,6 +30,14 @@ app:
 
       generate-routing-key: ${GENERATION_GENERATE_ROUTING_KEY:generation.generate}
       events-routing-pattern: ${GENERATION_EVENTS_ROUTING_PATTERN:generation.*}
+
+  storage:
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+      access-key: ${MINIO_ACCESS_KEY}
+      secret-key: ${MINIO_SECRET_KEY}
+      bucket: ${MINIO_BUCKET:generated-assets}
+
 
 management:
   endpoint:

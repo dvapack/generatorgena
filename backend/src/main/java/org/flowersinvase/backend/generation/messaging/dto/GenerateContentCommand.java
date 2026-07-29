@@ -1,4 +1,4 @@
-package org.flowersinvase.backend.generation.messaging;
+package org.flowersinvase.backend.generation.messaging.dto;
 
 import org.flowersinvase.backend.generation.entity.GenerationType;
 
