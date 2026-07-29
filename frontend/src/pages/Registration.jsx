@@ -1,12 +1,6 @@
-import RegLight from "./RegLight";
 import React from "react";
-const Registration = () => {
-   // const [darkMode, setDarkMode] = useState(false);
-    return (
-        <div>
-            <RegLight/>
-        </div>
-    );
-};
+import RegLight from "./RegLight";
+
+const Registration = () => <RegLight />;
 
 export default Registration;
