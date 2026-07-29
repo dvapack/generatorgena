@@ -151,6 +151,27 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
     }
 
     @Override
+    public Optional<Generation> findByIdForUpdate(UUID id) {
+        return jdbcClient.sql("""
+            select
+                id,
+                user_id,
+                prompt,
+                type,
+                status,
+                rating,
+                created_at,
+                completed_at
+            from generation_requests
+            where id = :id
+            for update
+            """)
+                .param("id", id)
+                .query(ROW_MAPPER)
+                .optional();
+    }
+
+    @Override
     public boolean updateRating(UUID id, UUID userId, Integer rating) {
         int affectedRows = jdbcClient.sql("""
                 update generation_requests

@@ -8,6 +8,8 @@ import org.flowersinvase.backend.generation.entity.Generation;
 import org.flowersinvase.backend.generation.entity.GenerationStatus;
 import org.flowersinvase.backend.exception.exceptions.generation.InvalidGenerationStateException;
 import org.flowersinvase.backend.generation.mapper.GenerationMapper;
+import org.flowersinvase.backend.generation.messaging.dto.GeneratedAssetPayload;
+import org.flowersinvase.backend.generation.messaging.dto.GenerationResultEvent;
 import org.flowersinvase.backend.generation.messaging.publisher.GenerationCommandPublisher;
 import org.flowersinvase.backend.generation.repository.GeneratedAssetRepository;
 import org.flowersinvase.backend.generation.repository.GenerationRequestRepository;
@@ -98,6 +100,86 @@ public class GenerationServiceImpl implements GenerationService {
                 asset.contentType(),
                 asset.sizeBytes(),
                 filename);
+    }
+
+    private void markProcessing(Generation generation) {
+        if (generation.status() != GenerationStatus.QUEUED) {
+            return;
+        }
+        generationRequestRepository.updateStatus(
+                generation.id(),
+                GenerationStatus.PROCESSING,
+                null
+        );
+    }
+
+    private boolean isFinal(GenerationStatus status) {
+        return status == GenerationStatus.COMPLETED
+                || status == GenerationStatus.FAILED;
+    }
+
+    private void markCompleted(
+            Generation generation,
+            GenerationResultEvent event
+    ) {
+        if (isFinal(generation.status())) {
+            return;
+        }
+        GeneratedAssetPayload payload = event.asset();
+        if (payload == null) {
+            throw new IllegalArgumentException("Событие COMPLETED должно содержать asset");
+        }
+        if (generatedAssetRepository.findByRequestId(generation.id()).isEmpty()) {
+            GeneratedAsset asset = new GeneratedAsset(
+                    UUID.ofEpochMillis(System.currentTimeMillis()),
+                    generation.id(),
+                    payload.objectKey(),
+                    payload.assetType(),
+                    payload.contentType(),
+                    payload.sizeBytes(),
+                    payload.duration(),
+                    payload.width(),
+                    payload.height(),
+                    event.occurredAt()
+            );
+            generatedAssetRepository.save(asset);
+        }
+        generationRequestRepository.updateStatus(
+                generation.id(),
+                GenerationStatus.COMPLETED,
+                event.occurredAt()
+        );
+    }
+
+    private void markFailed(
+            Generation generation,
+            GenerationResultEvent event
+    ) {
+        if (isFinal(generation.status())) {
+            return;
+        }
+        generationRequestRepository.updateStatus(
+                generation.id(),
+                GenerationStatus.FAILED,
+                event.occurredAt()
+        );
+    }
+
+    @Override
+    @Transactional
+    public void handleResult(GenerationResultEvent event) {
+        Generation generation = generationRequestRepository
+                .findByIdForUpdate(event.generationId())
+                .orElse(null);
+        if (generation == null) {
+            return;
+        }
+        switch (event.status()) {
+            case PROCESSING -> markProcessing(generation);
+            case COMPLETED -> markCompleted(generation, event);
+            case FAILED -> markFailed(generation, event);
+            case QUEUED -> throw new IllegalArgumentException("Статус QUEUED не применим к результату генерации");
+        }
     }
 
     @Override

@@ -13,6 +13,8 @@ public interface GeneratedAssetRepository {
 
     Optional<GeneratedAsset> findByUserIdAndRequestId(UUID userId, UUID requestId);
 
+    Optional<GeneratedAsset> findByRequestId(UUID requestId);
+
     List<GeneratedAsset> findAllByRequestIds(Collection<UUID> requestIds);
 
     boolean deleteByRequestId(UUID requestId);

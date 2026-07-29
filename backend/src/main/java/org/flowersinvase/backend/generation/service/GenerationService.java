@@ -1,6 +1,7 @@
 package org.flowersinvase.backend.generation.service;
 
 import org.flowersinvase.backend.generation.dto.*;
+import org.flowersinvase.backend.generation.messaging.dto.GenerationResultEvent;
 
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ public interface GenerationService {
     GenerationPageResponse getPage(UUID userId, int page, int size);
 
     DownloadedAsset download(UUID userId, UUID generationId);
+
+    void handleResult(GenerationResultEvent event);
 
     void delete(UUID userId, UUID generationId);
 }

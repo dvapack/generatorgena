@@ -117,6 +117,28 @@ public class JdbcGeneratedAssetRepositoryImpl implements  GeneratedAssetReposito
     }
 
     @Override
+    public Optional<GeneratedAsset> findByRequestId(UUID requestId) {
+        return jdbcClient.sql("""
+            select
+                id,
+                request_id,
+                object_key,
+                asset_type,
+                content_type,
+                size_bytes,
+                duration,
+                width,
+                height,
+                created_at
+            from generated_assets
+            where request_id = :requestId
+            """)
+                .param("requestId", requestId)
+                .query(ROW_MAPPER)
+                .optional();
+    }
+
+    @Override
     public List<GeneratedAsset> findAllByRequestIds(Collection<UUID> requestIds) {
         if (requestIds.isEmpty()) {
             return List.of();

@@ -18,6 +18,8 @@ public interface GenerationRequestRepository {
 
     Optional<Generation> findByIdAndUserId(UUID id, UUID userId);
 
+    Optional<Generation> findByIdForUpdate(UUID id);
+
     boolean updateRating(UUID id, UUID userId, Integer rating);
 
     boolean updateStatus(UUID id, GenerationStatus status, OffsetDateTime completedAt);
