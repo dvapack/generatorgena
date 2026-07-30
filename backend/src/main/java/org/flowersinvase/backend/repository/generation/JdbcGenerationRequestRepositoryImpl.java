@@ -1,8 +1,8 @@
 package org.flowersinvase.backend.repository.generation;
 
-import org.flowersinvase.backend.entity.generation.Generation;
-import org.flowersinvase.backend.entity.generation.GenerationStatus;
-import org.flowersinvase.backend.entity.generation.GenerationType;
+import org.flowersinvase.backend.entity.generation.GenerationEntity;
+import org.flowersinvase.backend.enums.GenerationStatus;
+import org.flowersinvase.backend.enums.GenerationType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -16,8 +16,8 @@ import java.util.UUID;
 @Repository
 public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRepository {
 
-    private final static RowMapper<Generation> ROW_MAPPER =
-            (resultSet, rowNum) -> new Generation(
+    private final static RowMapper<GenerationEntity> ROW_MAPPER =
+            (resultSet, rowNum) -> new GenerationEntity(
                     resultSet.getObject("id", UUID.class),
                     resultSet.getObject("user_id", UUID.class),
                     resultSet.getString("prompt"),
@@ -39,7 +39,7 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
     }
 
     @Override
-    public Generation save(Generation generation) {
+    public GenerationEntity save(GenerationEntity generationEntity) {
         return jdbcClient.sql("""
                 insert into generation_requests (
                     id,
@@ -71,20 +71,20 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     created_at,
                     completed_at
                 """)
-                .param("id", generation.id())
-                .param("userId", generation.userId())
-                .param("prompt", generation.prompt())
-                .param("type", generation.type().name())
-                .param("status", generation.status().name())
-                .param("rating", generation.rating(), Types.INTEGER)
-                .param("createdAt", generation.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
-                .param("completedAt", generation.completedAt(), Types.TIMESTAMP_WITH_TIMEZONE)
+                .param("id", generationEntity.id())
+                .param("userId", generationEntity.userId())
+                .param("prompt", generationEntity.prompt())
+                .param("type", generationEntity.type().name())
+                .param("status", generationEntity.status().name())
+                .param("rating", generationEntity.rating(), Types.INTEGER)
+                .param("createdAt", generationEntity.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
+                .param("completedAt", generationEntity.completedAt(), Types.TIMESTAMP_WITH_TIMEZONE)
                 .query(ROW_MAPPER)
                 .single();
     }
 
     @Override
-    public List<Generation> findAllByUserId(UUID userId, int offset, int limit) {
+    public List<GenerationEntity> findAllByUserId(UUID userId, int offset, int limit) {
         return jdbcClient.sql("""
                 select
                     id,
@@ -109,7 +109,7 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
     }
 
     @Override
-    public Optional<Generation> findById(UUID id) {
+    public Optional<GenerationEntity> findById(UUID id) {
         return jdbcClient.sql("""
                 select
                     id,
@@ -129,7 +129,7 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
     }
 
     @Override
-    public Optional<Generation> findByIdAndUserId(UUID id, UUID userId) {
+    public Optional<GenerationEntity> findByIdAndUserId(UUID id, UUID userId) {
         return jdbcClient.sql("""
                 select
                     id,
@@ -151,7 +151,7 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
     }
 
     @Override
-    public Optional<Generation> findByIdForUpdate(UUID id) {
+    public Optional<GenerationEntity> findByIdForUpdate(UUID id) {
         return jdbcClient.sql("""
             select
                 id,

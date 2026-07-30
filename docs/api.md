@@ -2,7 +2,7 @@
 
 По этому пути будут все необходимые для работы с пользователем методы.
 
-# /generations
+# /generationEntities
 
 По этому пути будут все необходимые для работы с генерациями методы.
 
@@ -14,7 +14,7 @@
 {
   "status": 400,
   "message": "Описание ошибки",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -68,7 +68,7 @@ POST метод для отправки запроса на генерацию.
 {
   "status": 400,
   "message": "Ошибка валидации",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": [
     "prompt: Промпт не может быть пустым"
@@ -92,7 +92,7 @@ POST метод для отправки запроса на генерацию.
 {
   "status": 400,
   "message": "Ошибка валидации",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": [
     "type: Тип генерации обязателен"
@@ -117,7 +117,7 @@ POST метод для отправки запроса на генерацию.
 {
   "status": 400,
   "message": "Некорректное тело запроса",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -131,7 +131,7 @@ POST метод для отправки запроса на генерацию.
 {
   "status": 401,
   "message": "Для генерации необходимо сначала авторизоваться",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -145,7 +145,7 @@ POST метод для отправки запроса на генерацию.
 {
   "status": 429,
   "message": "Слишком много запросов, попробуйте позже",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -159,7 +159,7 @@ Backend не смог поставить задачу в RabbitMQ или сер�
 {
   "status": 503,
   "message": "Сервис генерации временно недоступен",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -182,7 +182,7 @@ size=20
 
 ```json
 {
-  "generations": [
+  "generationEntities": [
     {
       "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
       "type": "IMAGE",
@@ -218,7 +218,7 @@ size=20
 
 ```json
 {
-  "generations": [],
+  "generationEntities": [],
   "page": 0,
   "size": 20,
   "total": 0
@@ -233,7 +233,7 @@ size=20
 {
   "status": 400,
   "message": "Некорректные параметры пагинации",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -247,7 +247,7 @@ size=20
 {
   "status": 401,
   "message": "Для получения генераций необходимо сначала авторизоваться",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -259,7 +259,7 @@ size=20
 {
   "status": 429,
   "message": "Слишком много запросов, попробуйте позже",
-  "path": "/generations",
+  "path": "/generationEntities",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -298,7 +298,7 @@ GET метод для получения конкретной генерации
 
 ```json
 {
-  "generation": {
+  "generationEntity": {
     "id": "acde070d-8c4c-4f0d-9d8a-162843c10333",
     "type": "VIDEO",
     "prompt": "test_generation",
@@ -319,7 +319,7 @@ GET метод для получения конкретной генерации
 {
   "status": 401,
   "message": "Для получения генерации необходимо сначала авторизоваться",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -333,7 +333,7 @@ GET метод для получения конкретной генерации
 {
   "status": 404,
   "message": "Генерация с данным id не найдена",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -345,7 +345,7 @@ GET метод для получения конкретной генерации
 {
   "status": 429,
   "message": "Слишком много запросов, попробуйте позже",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -387,7 +387,7 @@ Rating успешно обновился
 {
   "status": 400,
   "message": "Некорректное тело запроса",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -409,7 +409,7 @@ Rating успешно обновился
 {
   "status": 400,
   "message": "Ошибка валидации",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
   "timestamp": "2026-07-23T12:00:00",
   "errors": [
     "rating: Rating должен быть от 1 до 5"
@@ -425,7 +425,7 @@ Rating успешно обновился
 {
   "status": 401,
   "message": "Для изменения оценки генерации необходимо сначала авторизоваться",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -439,7 +439,7 @@ Rating успешно обновился
 {
   "status": 404,
   "message": "Генерация с данным id не найдена",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -453,7 +453,7 @@ Rating успешно обновился
 {
   "status": 409,
   "message": "Нельзя оценить незавершённую генерацию",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -465,7 +465,7 @@ Rating успешно обновился
 {
   "status": 429,
   "message": "Слишком много запросов, попробуйте позже",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/rating",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -491,7 +491,7 @@ DELETE метод для удаления конкретной генераци�
 {
   "status": 400,
   "message": "Некорректное значение параметра: id",
-  "path": "/generations/not-a-uuid",
+  "path": "/generationEntities/not-a-uuid",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -503,7 +503,7 @@ DELETE метод для удаления конкретной генераци�
 {
   "status": 401,
   "message": "Для удаления генерации необходимо сначала авторизоваться",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -517,7 +517,7 @@ DELETE метод для удаления конкретной генераци�
 {
   "status": 404,
   "message": "Генерация с данным id не найдена",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -529,7 +529,7 @@ DELETE метод для удаления конкретной генераци�
 {
   "status": 429,
   "message": "Слишком много запросов, попробуйте позже",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -543,7 +543,7 @@ S3/MinIO временно недоступен, поэтому файл резу
 {
   "status": 503,
   "message": "Файловое хранилище временно недоступно",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -564,7 +564,7 @@ GET метод для скачивания файла конкретной ге�
 ```http
 Content-Type: image/png
 Content-Length: 248193
-Content-Disposition: inline; filename="generation-1.png"
+Content-Disposition: inline; filename="generationEntity-1.png"
 ```
 
 Пример headers для видео/аудио:
@@ -573,7 +573,7 @@ Content-Disposition: inline; filename="generation-1.png"
 Content-Type: video/mp4
 Content-Length: 10485760
 Accept-Ranges: bytes
-Content-Disposition: inline; filename="generation-1.mp4"
+Content-Disposition: inline; filename="generationEntity-1.mp4"
 ```
 
 #### 206 Partial Content
@@ -594,7 +594,7 @@ Accept-Ranges: bytes
 {
   "status": 400,
   "message": "Некорректное значение параметра: id",
-  "path": "/generations/not-a-uuid/asset",
+  "path": "/generationEntities/not-a-uuid/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -608,7 +608,7 @@ Accept-Ranges: bytes
 {
   "status": 401,
   "message": "Для получения файла генерации необходимо сначала авторизоваться",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -622,7 +622,7 @@ Accept-Ranges: bytes
 {
   "status": 404,
   "message": "Файл генерации не найден",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -636,7 +636,7 @@ Accept-Ranges: bytes
 {
   "status": 409,
   "message": "Генерация ещё не завершена",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -650,7 +650,7 @@ Accept-Ranges: bytes
 {
   "status": 416,
   "message": "Некорректный диапазон файла",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -662,7 +662,7 @@ Accept-Ranges: bytes
 {
   "status": 429,
   "message": "Слишком много запросов, попробуйте позже",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }
@@ -676,7 +676,7 @@ S3/MinIO временно недоступен.
 {
   "status": 503,
   "message": "Файловое хранилище временно недоступно",
-  "path": "/generations/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
+  "path": "/generationEntities/acde070d-8c4c-4f0d-9d8a-162843c10333/asset",
   "timestamp": "2026-07-23T12:00:00",
   "errors": []
 }

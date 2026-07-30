@@ -2,12 +2,12 @@ package org.flowersinvase.backend.exception.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.flowersinvase.backend.exception.ErrorResponse;
-import org.flowersinvase.backend.exception.exceptions.common.ResourceNotFoundException;
-import org.flowersinvase.backend.exception.exceptions.storage.StorageUnavailableException;
-import org.flowersinvase.backend.exception.exceptions.generation.InvalidGenerationStateException;
-import org.flowersinvase.backend.exception.exceptions.messaging.MessageBrokerUnavailableException;
-import org.flowersinvase.backend.exception.exceptions.user.EmailAlreadyExistsException;
-import org.flowersinvase.backend.exception.exceptions.user.InvalidCredentialsException;
+import org.flowersinvase.backend.exception.common.ResourceNotFoundException;
+import org.flowersinvase.backend.exception.minio.StorageUnavailableException;
+import org.flowersinvase.backend.exception.generation.InvalidGenerationStateException;
+import org.flowersinvase.backend.exception.rabbit.MessageBrokerUnavailableException;
+import org.flowersinvase.backend.exception.user.EmailAlreadyExistsException;
+import org.flowersinvase.backend.exception.user.InvalidCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice
@@ -30,7 +31,9 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
@@ -43,7 +46,9 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
@@ -56,7 +61,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Некорректное значение параметра: " + exception.getName(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -72,7 +79,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Некорректные параметры запроса",
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -96,6 +105,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Ошибка валидации",
                 request.getRequestURI(),
+                LocalDateTime.now(),
                 errors
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -109,7 +119,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Некорректное тело запроса",
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -125,7 +137,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -141,7 +155,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -157,7 +173,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                 "Сервис генерации временно недоступен",
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -173,7 +191,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.SERVICE_UNAVAILABLE.value(),
                 exception.getMessage(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
 
         return ResponseEntity
@@ -186,7 +206,9 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Внутренняя ошибка сервера",
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }

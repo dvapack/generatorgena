@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.flowersinvase.backend.dto.generation.*;
+import org.flowersinvase.backend.model.DownloadedAsset;
 import org.flowersinvase.backend.service.generation.GenerationService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
@@ -62,7 +63,7 @@ public class GenerationController {
     }
 
     @GetMapping("/{id}/asset")
-    public ResponseEntity<InputStreamResource> download(
+    public ResponseEntity<InputStreamResource> downloadAssetFromMinio(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("id") UUID generationId
     ) {

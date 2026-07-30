@@ -15,6 +15,8 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -31,7 +33,9 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
                 "Доступ запрещён",
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

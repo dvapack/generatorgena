@@ -1,7 +1,7 @@
 package org.flowersinvase.backend.repository.generation;
 
-import org.flowersinvase.backend.entity.generation.Generation;
-import org.flowersinvase.backend.entity.generation.GenerationStatus;
+import org.flowersinvase.backend.entity.generation.GenerationEntity;
+import org.flowersinvase.backend.enums.GenerationStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -10,15 +10,15 @@ import java.util.UUID;
 
 public interface GenerationRequestRepository {
 
-    Generation save(Generation generation);
+    GenerationEntity save(GenerationEntity generationEntity);
 
-    List<Generation> findAllByUserId(UUID userId, int offset, int limit);
+    List<GenerationEntity> findAllByUserId(UUID userId, int offset, int limit);
 
-    Optional<Generation> findById(UUID id);
+    Optional<GenerationEntity> findById(UUID id);
 
-    Optional<Generation> findByIdAndUserId(UUID id, UUID userId);
+    Optional<GenerationEntity> findByIdAndUserId(UUID id, UUID userId);
 
-    Optional<Generation> findByIdForUpdate(UUID id);
+    Optional<GenerationEntity> findByIdForUpdate(UUID id);
 
     boolean updateRating(UUID id, UUID userId, Integer rating);
 

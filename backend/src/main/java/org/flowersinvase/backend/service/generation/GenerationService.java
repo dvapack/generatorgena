@@ -1,7 +1,8 @@
 package org.flowersinvase.backend.service.generation;
 
 import org.flowersinvase.backend.dto.generation.*;
-import org.flowersinvase.backend.dto.messaging.GenerationResultEvent;
+import org.flowersinvase.backend.dto.rabbit.GenerationResultEvent;
+import org.flowersinvase.backend.model.DownloadedAsset;
 
 import java.util.UUID;
 

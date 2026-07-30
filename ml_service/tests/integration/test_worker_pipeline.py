@@ -49,9 +49,9 @@ async def wait_for_message(
 async def test_rabbit_command_creates_minio_object() -> None:
     queue_suffix = uuid4().hex
     settings = ApplicationSettings(
-        generation_requests_queue=f"generation.requests.test.{queue_suffix}",
-        generation_results_queue=f"generation.results.test.{queue_suffix}",
-        generation_generate_routing_key=f"generation.generate.test.{queue_suffix}",
+        generation_requests_queue=f"generationEntity.requests.test.{queue_suffix}",
+        generation_results_queue=f"generationEntity.results.test.{queue_suffix}",
+        generation_generate_routing_key=f"generationEntity.generate.test.{queue_suffix}",
     )
     repository = MinioGeneratedAssetRepository.from_properties(settings.minio)
     await repository.ensure_ready()
@@ -100,8 +100,8 @@ async def test_rabbit_command_creates_minio_object() -> None:
             async with message.process():
                 received[message.routing_key] = json.loads(message.body)
 
-        assert received["generation.processing"]["status"] == "PROCESSING"
-        completed = received["generation.completed"]
+        assert received["generationEntity.processing"]["status"] == "PROCESSING"
+        completed = received["generationEntity.completed"]
         assert completed["status"] == "COMPLETED"
         object_key = completed["asset"]["objectKey"]
         assert object_key == f"images/requests/{generation_id}/result.png"

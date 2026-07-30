@@ -1,6 +1,6 @@
 package org.flowersinvase.backend.dto.generation;
 
-import org.flowersinvase.backend.entity.generation.GeneratedAssetType;
+import org.flowersinvase.backend.enums.GeneratedAssetType;
 
 import java.util.UUID;
 

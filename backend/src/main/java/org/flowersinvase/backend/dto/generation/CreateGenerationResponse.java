@@ -1,7 +1,8 @@
 package org.flowersinvase.backend.dto.generation;
 
-import org.flowersinvase.backend.entity.generation.GenerationStatus;
-import org.flowersinvase.backend.entity.generation.GenerationType;
+import jakarta.validation.constraints.NotNull;
+import org.flowersinvase.backend.enums.GenerationStatus;
+import org.flowersinvase.backend.enums.GenerationType;
 
 import java.util.UUID;
 

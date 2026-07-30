@@ -15,6 +15,8 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +35,9 @@ public class RestAuthenticationEntryPoint
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Требуется авторизация",
-                request.getRequestURI()
+                request.getRequestURI(),
+                LocalDateTime.now(),
+                List.of()
         );
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

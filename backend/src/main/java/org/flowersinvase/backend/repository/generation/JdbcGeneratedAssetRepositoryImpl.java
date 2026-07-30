@@ -1,7 +1,7 @@
 package org.flowersinvase.backend.repository.generation;
 
 import org.flowersinvase.backend.entity.generation.GeneratedAsset;
-import org.flowersinvase.backend.entity.generation.GeneratedAssetType;
+import org.flowersinvase.backend.enums.GeneratedAssetType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;

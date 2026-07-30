@@ -82,15 +82,15 @@ const MainLight = () => {
     let cancelled = false;
     const poll = async () => {
       try {
-        const generation = await getGeneration(selected.id);
+        const generationEntity = await getGeneration(selected.id);
         if (!cancelled) {
-          setSelected(generation);
+          setSelected(generationEntity);
           setGenerations((current) =>
             current.map((item) =>
-              item.id === generation.id ? generation : item,
+              item.id === generationEntity.id ? generationEntity : item,
             ),
           );
-          if (["COMPLETED", "FAILED"].includes(generation.status)) {
+          if (["COMPLETED", "FAILED"].includes(generationEntity.status)) {
             loadHistory(0);
           }
         }
@@ -163,10 +163,10 @@ const MainLight = () => {
     }
   };
 
-  const handleSelect = async (generation) => {
+  const handleSelect = async (generationEntity) => {
     setFeedback("");
     try {
-      setSelected(await getGeneration(generation.id));
+      setSelected(await getGeneration(generationEntity.id));
     } catch (error) {
       setFeedback(errorText(error));
     }
@@ -191,19 +191,19 @@ const MainLight = () => {
     }
   };
 
-  const handleDelete = async (generation) => {
+  const handleDelete = async (generationEntity) => {
     if (
       !window.confirm(
-        `Удалить генерацию «${generation.prompt || "Без названия"}»?`,
+        `Удалить генерацию «${generationEntity.prompt || "Без названия"}»?`,
       )
     ) {
       return;
     }
-    setDeletingId(generation.id);
+    setDeletingId(generationEntity.id);
     setFeedback("");
     try {
-      await deleteGeneration(generation.id);
-      if (selected?.id === generation.id) setSelected(null);
+      await deleteGeneration(generationEntity.id);
+      if (selected?.id === generationEntity.id) setSelected(null);
       const nextPage =
         generations.length === 1 && page > 0 ? page - 1 : page;
       await loadHistory(nextPage);
@@ -315,9 +315,9 @@ const MainLight = () => {
 
         <aside className={style.Controls}>
           <form className={style.PromptForm} onSubmit={handleSubmit}>
-            <label htmlFor="generation-prompt">Что будем создавать?</label>
+            <label htmlFor="generationEntity-prompt">Что будем создавать?</label>
             <textarea
-              id="generation-prompt"
+              id="generationEntity-prompt"
               value={prompt}
               maxLength={2000}
               onChange={(event) => setPrompt(event.target.value)}
@@ -354,44 +354,44 @@ const MainLight = () => {
               </p>
             ) : (
               <ul className={style.HistoryList}>
-                {generations.map((generation) => (
+                {generations.map((generationEntity) => (
                   <li
-                    key={generation.id}
+                    key={generationEntity.id}
                     className={
-                      selected?.id === generation.id ? style.SelectedItem : ""
+                      selected?.id === generationEntity.id ? style.SelectedItem : ""
                     }
                   >
                     <button
                       type="button"
                       className={style.HistoryItem}
-                      onClick={() => handleSelect(generation)}
+                      onClick={() => handleSelect(generationEntity)}
                     >
                       <span
                         className={`${style.HistoryStatus} ${
-                          style[`Status${generation.status}`] || ""
+                          style[`Status${generationEntity.status}`] || ""
                         }`}
                       />
                       <span className={style.HistoryText}>
-                        <strong>{generation.prompt}</strong>
+                        <strong>{generationEntity.prompt}</strong>
                         <small>
-                          {STATUS_LABELS[generation.status]} ·{" "}
-                          {formatDate(generation.createdAt)}
+                          {STATUS_LABELS[generationEntity.status]} ·{" "}
+                          {formatDate(generationEntity.createdAt)}
                         </small>
                       </span>
-                      {generation.rating && (
+                      {generationEntity.rating && (
                         <span className={style.HistoryRating}>
-                          ★ {generation.rating}
+                          ★ {generationEntity.rating}
                         </span>
                       )}
                     </button>
                     <button
                       type="button"
                       className={style.DeleteButton}
-                      aria-label={`Удалить генерацию ${generation.prompt}`}
-                      disabled={deletingId === generation.id}
-                      onClick={() => handleDelete(generation)}
+                      aria-label={`Удалить генерацию ${generationEntity.prompt}`}
+                      disabled={deletingId === generationEntity.id}
+                      onClick={() => handleDelete(generationEntity)}
                     >
-                      {deletingId === generation.id ? "…" : "×"}
+                      {deletingId === generationEntity.id ? "…" : "×"}
                     </button>
                   </li>
                 ))}

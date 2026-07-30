@@ -29,6 +29,10 @@ import java.util.Base64;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
+    public static final String USERS_REGISTER = "/users/register";
+    public static final String USERS_LOGIN = "/users/login";
+    public static final String ACTUATOR_HEALTH = "/actuator/health/**";
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -40,15 +44,10 @@ public class SecurityConfig {
         try {
             secret = Base64.getDecoder().decode(properties.secretBase64());
         } catch (IllegalArgumentException exception) {
-            throw new IllegalStateException(
-                    "JWT_SECRET должен быть строкой в формате Base64",
-                    exception
-            );
+            throw new IllegalStateException("JWT_SECRET должен быть строкой в формате Base64", exception);
         }
         if (secret.length < 32) {
-            throw new IllegalStateException(
-                    "JWT_SECRET должен содержать минимум 256 бит"
-            );
+            throw new IllegalStateException("JWT_SECRET должен содержать минимум 256 бит");
         }
         return new SecretKeySpec(secret, "HmacSHA256");
     }
@@ -62,17 +61,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(
-            SecretKey jwtSecretKey,
-            JwtProperties properties
-    ) {
+    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey, JwtProperties properties) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder
                 .withSecretKey(jwtSecretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
-        decoder.setJwtValidator(
-                JwtValidators.createDefaultWithIssuer(properties.issuer())
-        );
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(properties.issuer()));
         return decoder;
     }
 
@@ -81,23 +75,19 @@ public class SecurityConfig {
             HttpSecurity http,
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler
-    ) throws Exception {
-
+    ) {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/actuator/health/**").permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/users/register",
-                                "/users/login"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(ACTUATOR_HEALTH)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, USERS_REGISTER, USERS_LOGIN)
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(authenticationEntryPoint)
