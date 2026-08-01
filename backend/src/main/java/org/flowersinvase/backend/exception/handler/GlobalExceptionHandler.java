@@ -1,6 +1,7 @@
 package org.flowersinvase.backend.exception.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.flowersinvase.backend.exception.ErrorResponse;
 import org.flowersinvase.backend.exception.common.ResourceNotFoundException;
 import org.flowersinvase.backend.exception.minio.StorageUnavailableException;
@@ -20,6 +21,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -210,6 +212,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 List.of()
         );
+        log.error("Необработанная ошибка: метод={}, uri={}", request.getMethod(), request.getRequestURI(), exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

@@ -1,6 +1,7 @@
 package org.flowersinvase.backend.messaging.publisher;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.flowersinvase.backend.entity.generation.GenerationEntity;
 import org.flowersinvase.backend.exception.rabbit.MessageBrokerUnavailableException;
 import org.flowersinvase.backend.dto.rabbit.GenerateContentCommand;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RabbitGenerationCommandPublisher implements GenerationCommandPublisher {
@@ -33,6 +35,7 @@ public class RabbitGenerationCommandPublisher implements GenerationCommandPublis
                     command
             );
         } catch (AmqpException e) {
+            log.error("Ошибка RabbitMQ при отправке команды: generationId={}", generationEntity.id(), e);
             throw new MessageBrokerUnavailableException("Не удалось отправить задачу на генерацию", e);
         }
     }

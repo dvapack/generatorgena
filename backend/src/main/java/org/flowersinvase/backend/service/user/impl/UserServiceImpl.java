@@ -1,6 +1,7 @@
 package org.flowersinvase.backend.service.user.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.flowersinvase.backend.mapper.UserMapper;
 import org.flowersinvase.backend.security.TokenService;
 import org.flowersinvase.backend.dto.user.LoginRequest;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
     public RegisterUserResponse register(RegisterUserRequest request) {
         String email = request.email();
         if (userRepository.existsByEmail(email)) {
+            log.debug("Ошибка регистрации: попытка регистрации пользователя с существующим email");
             throw new EmailAlreadyExistsException(EMAIL_EXISTS_MESSAGE);
         }
         User user = userMapper.toUser(
@@ -44,21 +47,26 @@ public class UserServiceImpl implements UserService {
         );
         try {
             User savedUser = userRepository.save(user);
+            log.info("Пользователь зарегистрирован: id={}", savedUser.id());
             return userMapper.toRegisterUserResponse(savedUser);
         } catch (DuplicateKeyException exception) {
+            log.debug("Ошибка регистрации: попытка регистрации пользователя с существующим email");
             throw new EmailAlreadyExistsException(EMAIL_EXISTS_MESSAGE);
-        } catch (RuntimeException exception) {
-            throw new RuntimeException("Не удалось зарегистрировать пользователя");
         }
     }
 
     @Override
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new InvalidCredentialsException("Неверный email или пароль"));
+                .orElseThrow(() -> {
+                    log.debug("Ошибка входа: пользователь не найден");
+                    return new InvalidCredentialsException("Неверный email или пароль");
+                });
         if (!passwordEncoder.matches(request.password(), user.passwordHash())) {
+            log.debug("Ошибка входа: неправильный пароль у пользователя id={}", user.id());
             throw new InvalidCredentialsException("Неверный email или пароль");
         }
+        log.debug("Пользователь успешно вошёл: id={}", user.id());
         return tokenService.createAccessToken(user);
     }
 }

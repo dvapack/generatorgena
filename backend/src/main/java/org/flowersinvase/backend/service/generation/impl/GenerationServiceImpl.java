@@ -1,6 +1,7 @@
 package org.flowersinvase.backend.service.generation.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.flowersinvase.backend.dto.generation.*;
 import org.flowersinvase.backend.entity.generation.GenerationEntity;
 import org.flowersinvase.backend.exception.common.ResourceNotFoundException;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GenerationServiceImpl implements GenerationService {
@@ -39,12 +41,16 @@ public class GenerationServiceImpl implements GenerationService {
         GenerationEntity generationEntity = generationMapper.toGenerationEntity(request, generationId, userId);
         GenerationEntity savedGenerationEntity = generationRequestRepository.save(generationEntity);
         generationCommandPublisher.publish(savedGenerationEntity);
+        log.info("Генерация создана и отправлена в очередь: userId={}, generationId={}", userId, generationId);
         return generationMapper.toCreateGenerationResponse(savedGenerationEntity);
     }
 
     private GenerationEntity findGenerationById(UUID userId, UUID generationId) {
         return generationRequestRepository.findByIdAndUserId(generationId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Генерация с данным id не найдена"));
+                .orElseThrow(() -> {
+                    log.debug("Ошибка запроса: у userId={} отсутствует generationId={}", userId, generationId);
+                    return new ResourceNotFoundException("Генерация с данным id не найдена");
+                });
     }
 
     private GeneratedAsset findAssetByGenerationId(UUID userId, UUID generationId) {
@@ -63,12 +69,24 @@ public class GenerationServiceImpl implements GenerationService {
     public void updateRating(UUID userId, UUID generationId, UpdateGenerationRatingRequest request) {
         GenerationEntity generationEntity = findGenerationById(userId, generationId);
         if (generationEntity.status() != GenerationStatus.COMPLETED) {
+            log.debug(
+                    "Ошибка изменения оценки: нельзя оценить незавершенную генерацию у userId={} с generationId={}",
+                    userId,
+                    generationId
+            );
             throw new InvalidGenerationStateException("Нельзя оценить незавершённую генерацию");
         }
         boolean updated = generationRequestRepository.updateRating(generationId, userId, request.rating());
         if (!updated) {
+            log.debug("Ошибка изменения оценки: у userId={} отсутствует generationId={}", userId, generationId);
             throw new ResourceNotFoundException("Генерация с данным id не найдена");
         }
+        log.info(
+                "Обновлена оценка генерации: generationId={}, userId={}, rating={}",
+                generationId,
+                userId,
+                request.rating()
+        );
     }
 
     @Override
@@ -91,8 +109,12 @@ public class GenerationServiceImpl implements GenerationService {
     public DownloadedAsset download(UUID userId, UUID generationId) {
         GeneratedAsset asset = generatedAssetRepository
                 .findByUserIdAndRequestId(userId, generationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Файл генерации не найден"));
+                .orElseThrow(() -> {
+                    log.debug("Ошибка скачивания: у userId={} отсутствует generationId={}", userId, generationId);
+                    return new ResourceNotFoundException("Файл генерации не найден");
+                });
         var stream = storageService.get(asset.objectKey());
+        log.debug("Подготовлен файл генерации для скачивания: userId={}, generationId={}", userId, generationId);
         return new DownloadedAsset(stream, asset.contentType(), asset.sizeBytes(), buildFileName(asset));
     }
 
@@ -101,21 +123,39 @@ public class GenerationServiceImpl implements GenerationService {
             return;
         }
         generationRequestRepository.updateStatus(generationEntity.id(), GenerationStatus.PROCESSING, null);
+        log.debug(
+                "Установлен статус генерации generationId={} : status={}",
+                generationEntity.id(),
+                GenerationStatus.PROCESSING
+        );
     }
 
     private boolean isFinal(GenerationStatus status) {
         return status == GenerationStatus.COMPLETED || status == GenerationStatus.FAILED;
     }
 
-    private void markCompleted(
-            GenerationEntity generationEntity,
-            GenerationResultEvent event
-    ) {
+    private void logIgnoredEvent(GenerationEntity generationEntity, GenerationResultEvent event) {
+        log.debug(
+                "Событие генерации проигнорировано: generationId={}, currentStatus={}, eventId={}, eventStatus={}",
+                generationEntity.id(),
+                generationEntity.status(),
+                event.eventId(),
+                event.status()
+        );
+    }
+
+    private void markCompleted(GenerationEntity generationEntity, GenerationResultEvent event) {
         if (isFinal(generationEntity.status())) {
+            logIgnoredEvent(generationEntity, event);
             return;
         }
         GeneratedAssetPayload payload = event.asset();
         if (payload == null) {
+            log.warn(
+                    "Ошибка изменения статуса генерации: событие eventId={} с generationId={} должно иметь asset",
+                    event.eventId(),
+                    generationEntity.id()
+            );
             throw new IllegalArgumentException("Событие COMPLETED должно содержать asset");
         }
         if (generatedAssetRepository.findByRequestId(generationEntity.id()).isEmpty()) {
@@ -134,16 +174,20 @@ public class GenerationServiceImpl implements GenerationService {
             generatedAssetRepository.save(asset);
         }
         generationRequestRepository.updateStatus(generationEntity.id(), GenerationStatus.COMPLETED, event.occurredAt());
+        log.debug(
+                "Установлен статус генерации generationId={} : status={}",
+                generationEntity.id(),
+                GenerationStatus.COMPLETED
+        );
     }
 
-    private void markFailed(
-            GenerationEntity generationEntity,
-            GenerationResultEvent event
-    ) {
+    private void markFailed(GenerationEntity generationEntity, GenerationResultEvent event) {
         if (isFinal(generationEntity.status())) {
+            logIgnoredEvent(generationEntity, event);
             return;
         }
         generationRequestRepository.updateStatus(generationEntity.id(), GenerationStatus.FAILED, event.occurredAt());
+        log.warn("Генерация завершилась с ошибкой: generationId={}, eventId={}", generationEntity.id(), event.eventId());
     }
 
     @Override
@@ -151,16 +195,22 @@ public class GenerationServiceImpl implements GenerationService {
     public void handleResult(GenerationResultEvent event) {
         generationRequestRepository
                 .findByIdForUpdate(event.generationId())
-                .ifPresent(generationEntity -> {
-                    switch (event.status()) {
-                        case PROCESSING -> markProcessing(generationEntity);
-                        case COMPLETED -> markCompleted(generationEntity, event);
-                        case FAILED -> markFailed(generationEntity, event);
-                        case QUEUED -> throw new IllegalArgumentException(
-                                "Статус QUEUED не применим к результату генерации"
-                        );
-                    }
-                });
+                .ifPresentOrElse(generationEntity -> {
+                            switch (event.status()) {
+                                case PROCESSING -> markProcessing(generationEntity);
+                                case COMPLETED -> markCompleted(generationEntity, event);
+                                case FAILED -> markFailed(generationEntity, event);
+                                case QUEUED -> throw new IllegalArgumentException(
+                                        "Статус QUEUED не применим к результату генерации"
+                                );
+                            }
+                        },
+                        () -> log.warn(
+                                "Получено событие для неизвестной генерации: eventId={}, generationId={}",
+                                event.eventId(),
+                                event.generationId()
+                        )
+                );
     }
 
     @Override
@@ -172,7 +222,9 @@ public class GenerationServiceImpl implements GenerationService {
         }
         boolean deleted = generationRequestRepository.deleteByUserAndId(userId, generationId);
         if (!deleted) {
+            log.warn("Ошибка удаления: у userId={} отсутствует generationId={}", userId, generationId);
             throw new ResourceNotFoundException("Генерация с данным id не найдена");
         }
+        log.info("У пользователя userId={} удалена генерация с generationId={}", userId, generationId);
     }
 }
