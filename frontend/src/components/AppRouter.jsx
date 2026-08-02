@@ -1,34 +1,48 @@
 
-import React, { useContext} from 'react';
+import React, { useContext } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import { privateRoutes, publicRoutes } from "../router";
 import { AuthContext } from "../context";
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router } from "react-router-dom";
 
 const AppRouter = () => {
-    const { isAuth, isLoading } = useContext(AuthContext);
+  const { isAuth } = useContext(AuthContext);
 
-    return (
-        <div>
-            {console.log(isAuth)}
-        {
-            <Router>
-                <Switch>
-                    {publicRoutes.map(route =>
-                        <Route
-                            component={route.component}
-                            path={route.path}
-                            exact={route.exact}
-                            key={route.path}
-                        />
-                    )}
-                    <Redirect to='/registration' />
-                </Switch>
-            </Router>
-}
-            </div>
-            
-    );
+  return (
+    <Router>
+      <Switch>
+        {privateRoutes.map((route) => (
+          <Route
+            path={route.path}
+            exact={route.exact}
+            key={route.path}
+            render={(props) =>
+              isAuth ? (
+                <route.component {...props} />
+              ) : (
+                <Redirect to="/login" />
+              )
+            }
+          />
+        ))}
+        {publicRoutes.map((route) => (
+          <Route
+            path={route.path}
+            exact={route.exact}
+            key={route.path}
+            render={(props) =>
+              isAuth ? (
+                <Redirect to="/main" />
+              ) : (
+                <route.component {...props} />
+              )
+            }
+          />
+        ))}
+        <Redirect to={isAuth ? "/main" : "/login"} />
+      </Switch>
+    </Router>
+  );
 };
 
 export default AppRouter;

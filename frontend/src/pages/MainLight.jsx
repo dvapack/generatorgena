@@ -1,419 +1,427 @@
-import React, { useContext, useState, Suspense, useEffect } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  createGeneration,
+  deleteGeneration,
+  getGeneration,
+  getGenerationAsset,
+  getGenerations,
+  updateGenerationRating,
+} from "../api/client";
 import { AuthContext } from "../context";
-import style from "../styles/Light/Main.module.css";
 import MyButton from "../UI/components/buttons/MyButton";
-import MyInput from "../UI/components/input/MyInput";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import style from "../styles/Light/Main.module.css";
+
+const PAGE_SIZE = 20;
+
+const STATUS_LABELS = {
+  QUEUED: "В очереди",
+  PROCESSING: "Генерируется",
+  COMPLETED: "Готово",
+  FAILED: "Не удалось",
+};
+
+const formatDate = (value) => {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("ru-RU", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+};
+
+const errorText = (error) =>
+  [error.message, ...(error.errors || [])].filter(Boolean).join(". ");
 
 const MainLight = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("accessToken"),
-  );
-  const [requestData, setRequestData] = useState({ prompt: "" });
-  const handlePromptChange = (event) => {
-    const prompt = event.target.value;
-    setRequestData({ ...requestData, prompt });
-  };
+  const { signOut } = useContext(AuthContext);
+  const [prompt, setPrompt] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [assetUrl, setAssetUrl] = useState("");
+  const [generations, setGenerations] = useState([]);
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const [feedback, setFeedback] = useState("");
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
-  const refreshAccessToken = async () => {
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const loadHistory = useCallback(async (requestedPage = 0) => {
+    setIsHistoryLoading(true);
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      console.log("refresh", refreshToken);
-      if (!refreshToken) {
-        throw new Error("Refresh token not found");
-      }
-
-      const response = await fetch("http://localhost:8000/api/users/refresh/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Если сервер требует Authorization header (например, с accessToken)
-          // Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify({ refresh: refreshToken }), // или { refresh_token: refreshToken }
-      });
-
-      // Логирование для отладки
-      console.log("Refresh token response status:", response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Refresh token error details:", errorData);
-        throw new Error("Failed to refresh token");
-      }
-
-      const data = await response.json();
-      console.log("New tokens data:", data);
-
-      // Проверка наличия access-токена в ответе
-      if (!data.access) {
-        throw new Error("Access token not found in response");
-      }
-
-      localStorage.setItem("accessToken", data.access);
-      localStorage.setItem("refreshToken", data.refresh);
-      setAccessToken(data.access);
-      console.log("token", data.access);
-      return data.access; // Возвращаем новый токен для использования
-    } catch (err) {
-      console.error("Error refreshing token:", err);
-      // Дополнительные действия при ошибке:
-      // - Удалить все токены
-      // - Перенаправить на страницу входа
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      setAccessToken(null);
-      window.location.href = "/login";
-      throw err; // Пробросить ошибку дальше, если нужно
+      const result = await getGenerations(requestedPage, PAGE_SIZE);
+      setGenerations(result.generations);
+      setPage(result.page);
+      setTotal(result.total);
+    } catch (error) {
+      setFeedback(errorText(error));
+    } finally {
+      setIsHistoryLoading(false);
     }
-  };
-  // Запускаем таймер обновления токена при загрузке компонента
-  useEffect(() => {
-    //refreshAccessToken();
-    // Обновляем токен сразу при загрузке (по желанию)
-    const intervalId = setInterval(
-      () => {
-        refreshAccessToken();
-      },
-      5 * 60 * 1000,
-    ); // 5 минут
-
-    return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    loadHistory(0);
+  }, [loadHistory]);
+
+  useEffect(() => {
+    if (
+      !selected?.id ||
+      !["QUEUED", "PROCESSING"].includes(selected.status)
+    ) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const generationEntity = await getGeneration(selected.id);
+        if (!cancelled) {
+          setSelected(generationEntity);
+          setGenerations((current) =>
+            current.map((item) =>
+              item.id === generationEntity.id ? generationEntity : item,
+            ),
+          );
+          if (["COMPLETED", "FAILED"].includes(generationEntity.status)) {
+            loadHistory(0);
+          }
+        }
+      } catch (error) {
+        if (!cancelled) setFeedback(errorText(error));
+      }
+    };
+
+    poll();
+    const intervalId = window.setInterval(poll, 2000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [selected?.id, selected?.status, loadHistory]);
+
+  useEffect(() => {
+    if (!selected?.id || selected.status !== "COMPLETED") {
+      setAssetUrl("");
+      return undefined;
+    }
+
+    let cancelled = false;
+    let objectUrl = "";
+    const loadAsset = async () => {
+      try {
+        const blob = await getGenerationAsset(selected.id);
+        if (!cancelled) {
+          objectUrl = URL.createObjectURL(blob);
+          setAssetUrl(objectUrl);
+        }
+      } catch (error) {
+        if (!cancelled) setFeedback(errorText(error));
+      }
+    };
+    setAssetUrl("");
+    loadAsset();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [selected?.id, selected?.status]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setIsLoading(true);
+    const normalizedPrompt = prompt.trim();
+    if (!normalizedPrompt) {
+      setFeedback("Введите описание изображения");
+      return;
+    }
 
+    setIsCreating(true);
+    setFeedback("");
     try {
-      const userId = getUserIdFromToken();
-      const token = localStorage.getItem("accessToken");
-      console.log("meow");
-      console.log("TOKEN:  ", token);
-      if (!token) {
-        throw new Error("JWT token not found in localStorage");
-      }
-
-      const response = await fetch("http://localhost:8000/api/requests/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          prompt: requestData.prompt,
-        }),
+      const created = await createGeneration(normalizedPrompt);
+      setSelected({
+        ...created,
+        prompt: normalizedPrompt,
+        rating: null,
+        asset: null,
       });
-
-      if (response.status === 201) {
-        const data = await response.json();
-        const operationId = data.operationID;
-
-        const fetchImageWithRetry = async (retries = 5, delay = 2000) => {
-          for (let i = 0; i < retries; i++) {
-            const imageResponse = await fetch(
-              `http://localhost:8000/api/getimage/?operation_id=${operationId}&user_id=${userId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              },
-            );
-
-            if (imageResponse.ok) {
-              const blob = await imageResponse.blob();
-              const imageUrl = URL.createObjectURL(blob);
-              setImageSrc(imageUrl);
-              return; // Успешно получили изображение, выходим из функции
-            } else if (imageResponse.status === 404) {
-              // Изображение ещё не готово, ждём и повторяем попытку
-              await new Promise((res) => setTimeout(res, delay));
-            } else {
-              alert("Ошибка при получении изображения");
-              return;
-            }
-          }
-          alert("Изображение не появилось в течение ожидания");
-        };
-        await fetchImageWithRetry();
-      } else {
-        alert(`Ошибка при отправке запроса: статус ${response.status}`);
-      }
+      setPrompt("");
+      setPage(0);
+      await loadHistory(0);
     } catch (error) {
-      alert(error.message);
+      setFeedback(errorText(error));
     } finally {
-      setIsLoading(false);
+      setIsCreating(false);
     }
   };
 
-  const [imageSrc, setImageSrc] = useState(null);
-  function getUserIdFromToken() {
-    const token = localStorage.getItem("accessToken"); // Получаем токен из localStorage
-    if (!token) {
-      throw new Error("JWT token not found in localStorage");
-    }
-
-    // Декодируем токен (предполагаем, что он закодирован в формате base64)
-    const payload = token.split(".")[1]; // Берем среднюю часть токена
-    const decodedPayload = JSON.parse(atob(payload)); // Декодируем base64 и парсим JSON
-    console.log(token);
-    return decodedPayload.user_id; // Предполагаем, что ID пользователя хранится в поле userId
-  }
-
-  // Функция для отправки запроса на историю запросов
-  const [history, setHistory] = useState([]);
-  const [showHistory, setShowHistory] = useState(false); // Состояние для отображения истории
-  const [selectedRequest, setSelectedRequest] = useState(null); // Состояние для хранения информации о выбранном запросе
-
-  const fetchUserHistory = async () => {
+  const handleSelect = async (generationEntity) => {
+    setFeedback("");
     try {
-      setIsLoading(true); // Начинаем загрузку
-      const userId = getUserIdFromToken();
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("Access token not found");
-      }
-
-      const response = await fetch(
-        `http://localhost:8000/api/users/history/?user_id=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // формат токена для JWT
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Ошибка при получении истории: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(data[2].operationID);
-      // Предполагаем, что data — массив запросов, сортируем и берём последние 3
-      const lastThree = data.slice(-3).reverse();
-      setHistory(lastThree);
-      setShowHistory(true); // Показываем историю после загрузки
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setIsLoading(false); // Заканчиваем загрузку
-    }
-  };
-
-  // Функция для получения информации о конкретном запросе
-  const fetchRequestDetails = async (requestId) => {
-    try {
-      setIsLoading(true);
-      console.log(requestId);
-      const userId = getUserIdFromToken();
-      const token = localStorage.getItem("accessToken");
-      const url = new URL(
-        `https://your-api-domain.com/api/requests/${requestId}`,
-      );
-      url.searchParams.append("user_id", userId);
-
-      if (!token) {
-        throw new Error("Access token not found");
-      }
-
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Ошибка при получении деталей запроса: ${response.status}`,
-        );
-      }
-
-      const data = await response.json();
-      setSelectedRequest(data);
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getItemStyle = (item) => {
-    return {
-      backgroundColor: item.success ? "#e6ffe6" : "#ffe6e6",
-      margin: "5px 0",
-      borderRadius: "5px",
-      cursor: "pointer",
-    };
-  };
-
-  async function deleteUser() {
-    const userId = getUserIdFromToken();
-    const token = localStorage.getItem("accessToken");
-    try {
-      const response = await fetch(
-        `http://localhost:8000/api/users/?user_id=${userId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Ошибка HTTP: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Пользователь удалён:", data);
+      setSelected(await getGeneration(generationEntity.id));
     } catch (error) {
-      console.error("Ошибка при удалении пользователя:", error);
+      setFeedback(errorText(error));
     }
-  }
-  // переход между страницами
-  const historyHook = useHistory();
-  const returnToLogin = () => {
-    historyHook.push("/login");
   };
-  const returnToChangePass = () => {
-    historyHook.push("/change-pass");
+
+  const handleRating = async (rating) => {
+    if (!selected || ratingLoading) return;
+    setRatingLoading(true);
+    setFeedback("");
+    try {
+      await updateGenerationRating(selected.id, rating);
+      setSelected((current) => ({ ...current, rating }));
+      setGenerations((current) =>
+        current.map((item) =>
+          item.id === selected.id ? { ...item, rating } : item,
+        ),
+      );
+    } catch (error) {
+      setFeedback(errorText(error));
+    } finally {
+      setRatingLoading(false);
+    }
   };
-  const returnOurTeam = () => {
-    historyHook.push("/ourteam");
+
+  const handleDelete = async (generationEntity) => {
+    if (
+      !window.confirm(
+        `Удалить генерацию «${generationEntity.prompt || "Без названия"}»?`,
+      )
+    ) {
+      return;
+    }
+    setDeletingId(generationEntity.id);
+    setFeedback("");
+    try {
+      await deleteGeneration(generationEntity.id);
+      if (selected?.id === generationEntity.id) setSelected(null);
+      const nextPage =
+        generations.length === 1 && page > 0 ? page - 1 : page;
+      await loadHistory(nextPage);
+    } catch (error) {
+      setFeedback(errorText(error));
+    } finally {
+      setDeletingId(null);
+    }
   };
-  const { t, i18n } = useTranslation("translation");
+
+  const selectedStatus = selected
+    ? STATUS_LABELS[selected.status] || selected.status
+    : "";
+
+  const pageLabel = useMemo(
+    () => `${Math.min(page + 1, totalPages)} / ${totalPages}`,
+    [page, totalPages],
+  );
+
   return (
-    <div>
-      <Suspense fallback={<div>Loading...</div>}></Suspense>
-      <div className={style.MainBlur} />
-      <div className={style.LoginPage}>
-        <div className="container-fluid">
-          <div className={style.MainPage}>
-            <div className="row">
-              <div className={"col-lg-2"}></div>
-
-              <div className={`col-lg-5 text-center`}>
-                {/* Контейнер для изображения */}
-                <div>
-                  {imageSrc ? (
-                    <img src={imageSrc} alt="Полученное изображение" />
-                  ) : (
-                    <div className={style.Info}>
-                      <h1 className={style.InfoText}>
-                        Гена - генератор изображений
-                      </h1>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className={`col-lg-3`}>
-                <div className={style.MainForm}>
-                  <div className={style.MainFormBlur} />
-                  <form className={style.form}>
-                    <h1 className={style.MainFormHeaderText}>Введите промпт</h1>
-                    <textarea
-                      className="MyInput MyInputBlur"
-                      style={{
-                        margin: "0px",
-                        marginTop: "5%",
-                        height: "255px",
-                        width: "90%",
-                        resize: "none",
-                        verticalAlign: "top",
-                        borderRadius: "17px",
-                        border: "none",
-                        outline: "none",
-                        fontFamily: "Montserrat",
-                        fontWeight: 500,
-                        fontSize: "1rem",
-                        padding: "20px",
-                        color: "#ffffff",
-                        opacity: "0.7",
-                        backgroundColor: "rgba(30, 30, 30, 0.1)",
-                        backdropFilter: "blur(5px)",
-                      }}
-                      placeholder="Введите промпт"
-                      onChange={handlePromptChange}
-                    />
-                    <MyButton
-                      blur={true}
-                      style={{
-                        margin: "0px",
-                        marginTop: "8%",
-                      }}
-                      onClick={handleSubmit}
-                    >
-                      Сгенерировать
-                    </MyButton>
-                    {/*
-                    <MyButton
-                      style={{
-                        backgroundColor: "#1F5CB6",
-                        color: "#ffffff",
-                        margin: "0px",
-                        marginTop: "8%",
-                      }}
-                      onClick={fetchUserHistory}
-                      disabled={isLoading}
-                    >
-                      История
-                    </MyButton>
-                    */}
-                  </form>
-                  {/*
-                  {showHistory && (
-                    <div>
-                      <h2>История запросов</h2>
-                      <ul>
-                        {history.map((item, index) => (
-                          <li
-                            key={index}
-                            style={getItemStyle(item)}
-                            onClick={() =>
-                              fetchRequestDetails(item.operationID)
-                            } // Обработчик клика
-                          >
-                            {item.prompt || JSON.stringify(item)}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  */}
-                  {/*
-                  {selectedRequest && (
-                    <div>
-                      <h2>Детали запроса</h2>
-                      <p>ID: {selectedRequest.id}</p>
-                      <p>Prompt: {selectedRequest.prompt}</p>
-                      {selectedRequest.image && (
-                        <img
-                          src={selectedRequest.image}
-                          alt="Изображение запроса"
-                        />
-                      )}
-                    </div>
-                     */}
-                </div>
-              </div>
-            </div>
-            {/** ссылки внизу страницы */}
-            <div className={style.Bottom}>
-              <h4 className={style.BottomText}>Гена © 2025</h4>
-            </div>
-          </div>
+    <main className={style.Page}>
+      <header className={style.Header}>
+        <div>
+          <span className={style.Logo}>Гена</span>
+          <span className={style.Tagline}>генератор изображений</span>
         </div>
+        <button className={style.LogoutButton} type="button" onClick={signOut}>
+          Выйти
+        </button>
+      </header>
+
+      {feedback && (
+        <div className={style.Feedback} role="alert">
+          <span>{feedback}</span>
+          <button
+            type="button"
+            aria-label="Закрыть сообщение"
+            onClick={() => setFeedback("")}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <div className={style.Workspace}>
+        <section className={style.ResultPanel} aria-live="polite">
+          {!selected && (
+            <div className={style.EmptyResult}>
+              <span className={style.Spark}>✦</span>
+              <h1>Вообразите — Гена нарисует</h1>
+              <p>
+                Опишите сюжет, настроение и детали будущего изображения.
+              </p>
+            </div>
+          )}
+
+          {selected && selected.status !== "COMPLETED" && (
+            <div className={style.EmptyResult}>
+              <span
+                className={`${style.StatusOrb} ${
+                  selected.status === "FAILED" ? style.FailedOrb : ""
+                }`}
+              />
+              <p className={style.StatusLabel}>{selectedStatus}</p>
+              <h2>{selected.prompt}</h2>
+              {selected.status === "FAILED" && (
+                <p>Попробуйте изменить описание и запустить генерацию снова.</p>
+              )}
+            </div>
+          )}
+
+          {selected?.status === "COMPLETED" && (
+            <div className={style.CompletedResult}>
+              {assetUrl ? (
+                <img src={assetUrl} alt={selected.prompt} />
+              ) : (
+                <div className={style.ImageLoading}>Загружаем изображение…</div>
+              )}
+              <div className={style.ResultMeta}>
+                <div>
+                  <span className={style.StatusBadge}>Готово</span>
+                  <p>{selected.prompt}</p>
+                </div>
+                <div
+                  className={style.Rating}
+                  aria-label="Оценка изображения"
+                >
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      type="button"
+                      key={rating}
+                      className={
+                        rating <= (selected.rating || 0)
+                          ? style.StarActive
+                          : ""
+                      }
+                      aria-label={`Оценить на ${rating}`}
+                      disabled={ratingLoading}
+                      onClick={() => handleRating(rating)}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <aside className={style.Controls}>
+          <form className={style.PromptForm} onSubmit={handleSubmit}>
+            <label htmlFor="generationEntity-prompt">Что будем создавать?</label>
+            <textarea
+              id="generationEntity-prompt"
+              value={prompt}
+              maxLength={2000}
+              onChange={(event) => setPrompt(event.target.value)}
+              placeholder="Например: уютный домик в волшебном лесу на закате…"
+            />
+            <div className={style.PromptFooter}>
+              <span>{prompt.length} / 2000</span>
+              <MyButton
+                type="submit"
+                blur
+                disabled={isCreating || !prompt.trim()}
+              >
+                {isCreating ? "Отправляем…" : "Сгенерировать"}
+              </MyButton>
+            </div>
+          </form>
+
+          <section className={style.History} aria-labelledby="history-heading">
+            <div className={style.HistoryHeader}>
+              <div>
+                <p className={style.Eyebrow}>Ваши работы</p>
+                <h2 id="history-heading">История</h2>
+              </div>
+              <button type="button" onClick={() => loadHistory(page)}>
+                Обновить
+              </button>
+            </div>
+
+            {isHistoryLoading ? (
+              <p className={style.HistoryMessage}>Загружаем историю…</p>
+            ) : generations.length === 0 ? (
+              <p className={style.HistoryMessage}>
+                Здесь появятся созданные изображения.
+              </p>
+            ) : (
+              <ul className={style.HistoryList}>
+                {generations.map((generationEntity) => (
+                  <li
+                    key={generationEntity.id}
+                    className={
+                      selected?.id === generationEntity.id ? style.SelectedItem : ""
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={style.HistoryItem}
+                      onClick={() => handleSelect(generationEntity)}
+                    >
+                      <span
+                        className={`${style.HistoryStatus} ${
+                          style[`Status${generationEntity.status}`] || ""
+                        }`}
+                      />
+                      <span className={style.HistoryText}>
+                        <strong>{generationEntity.prompt}</strong>
+                        <small>
+                          {STATUS_LABELS[generationEntity.status]} ·{" "}
+                          {formatDate(generationEntity.createdAt)}
+                        </small>
+                      </span>
+                      {generationEntity.rating && (
+                        <span className={style.HistoryRating}>
+                          ★ {generationEntity.rating}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className={style.DeleteButton}
+                      aria-label={`Удалить генерацию ${generationEntity.prompt}`}
+                      disabled={deletingId === generationEntity.id}
+                      onClick={() => handleDelete(generationEntity)}
+                    >
+                      {deletingId === generationEntity.id ? "…" : "×"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {total > PAGE_SIZE && (
+              <nav className={style.Pagination} aria-label="Страницы истории">
+                <button
+                  type="button"
+                  disabled={page === 0 || isHistoryLoading}
+                  onClick={() => loadHistory(page - 1)}
+                >
+                  Назад
+                </button>
+                <span>{pageLabel}</span>
+                <button
+                  type="button"
+                  disabled={page + 1 >= totalPages || isHistoryLoading}
+                  onClick={() => loadHistory(page + 1)}
+                >
+                  Вперёд
+                </button>
+              </nav>
+            )}
+          </section>
+        </aside>
       </div>
-    </div>
+    </main>
   );
 };
+
 export default MainLight;
