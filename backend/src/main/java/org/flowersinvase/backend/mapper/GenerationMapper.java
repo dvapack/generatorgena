@@ -21,7 +21,6 @@ public class GenerationMapper {
                 generationId,
                 userId,
                 request.prompt(),
-                request.type(),
                 GenerationStatus.QUEUED,
                 null,
                 null,
@@ -32,7 +31,6 @@ public class GenerationMapper {
     public GenerationResponse toGenerationResponse(@NotNull GenerationEntity generationEntity, GeneratedAsset asset) {
         return new GenerationResponse(
                 generationEntity.id(),
-                generationEntity.type(),
                 generationEntity.prompt(),
                 generationEntity.status(),
                 generationEntity.rating(),
@@ -45,7 +43,6 @@ public class GenerationMapper {
     public CreateGenerationResponse toCreateGenerationResponse(GenerationEntity generationEntity) {
         return new CreateGenerationResponse(
                 generationEntity.id(),
-                generationEntity.type(),
                 generationEntity.status()
         );
     }
@@ -56,11 +53,7 @@ public class GenerationMapper {
         }
         return new GeneratedAssetResponse(
                 generatedAsset.id(),
-                generatedAsset.assetType(),
                 generatedAsset.contentType(),
-                generatedAsset.width(),
-                generatedAsset.height(),
-                generatedAsset.duration(),
                 generatedAsset.sizeBytes()
         );
     }

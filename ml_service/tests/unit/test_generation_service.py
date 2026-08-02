@@ -12,7 +12,6 @@ from generatorgena_ml.model import (
     GeneratedImage,
     GenerationCommand,
     GenerationEvent,
-    GenerationType,
     ProcessingEvent,
 )
 from generatorgena_ml.service import GenerationService
@@ -53,14 +52,11 @@ class FakePublisher:
         self.events.append(event)
 
 
-def command(
-    generation_type: GenerationType = GenerationType.IMAGE,
-) -> GenerationCommand:
+def command() -> GenerationCommand:
     return GenerationCommand(
         command_id=uuid4(),
         generation_id=uuid4(),
         prompt="flowers",
-        generation_type=generation_type,
     )
 
 
@@ -79,18 +75,6 @@ async def test_success_uploads_then_publishes_completed() -> None:
         ProcessingEvent,
         CompletedEvent,
     ]
-
-
-async def test_unsupported_type_publishes_failed() -> None:
-    publisher = FakePublisher()
-    service = GenerationService(FakeGenerator(), FakeRepository(), publisher)
-
-    await service.generate(command(GenerationType.VIDEO))
-
-    failed = publisher.events[-1]
-    assert isinstance(failed, FailedEvent)
-    assert failed.code == "UNSUPPORTED_TYPE"
-    assert failed.message == "Тип генерации VIDEO не поддерживается"
 
 
 async def test_storage_error_is_mapped_to_failed_event() -> None:

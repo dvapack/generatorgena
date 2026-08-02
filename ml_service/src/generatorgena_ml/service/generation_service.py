@@ -16,7 +16,6 @@ from generatorgena_ml.model import (
     FailureCode,
     GeneratedAsset,
     GenerationCommand,
-    GenerationType,
     ProcessingEvent,
 )
 from generatorgena_ml.repository.generated_asset_repository import (
@@ -49,17 +48,6 @@ class GenerationService:
                 generation_id=command.generation_id,
             )
         )
-
-        if command.generation_type is not GenerationType.IMAGE:
-            await self._publish_failure(
-                command,
-                code=FailureCode.UNSUPPORTED_TYPE,
-                message=(
-                    f"Тип генерации {command.generation_type.value} не поддерживается"
-                ),
-                retryable=False,
-            )
-            return
 
         try:
             image = await self._image_generator.generate(command.prompt)
@@ -106,8 +94,6 @@ class GenerationService:
                 asset=GeneratedAsset(
                     object_key=object_key,
                     size_bytes=image.size_bytes,
-                    width=image.width,
-                    height=image.height,
                     content_type=image.content_type,
                 ),
             )

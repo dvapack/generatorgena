@@ -1,7 +1,6 @@
 package org.flowersinvase.backend.repository.generation;
 
 import org.flowersinvase.backend.entity.generation.GeneratedAsset;
-import org.flowersinvase.backend.enums.GeneratedAssetType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -21,12 +20,8 @@ public class JdbcGeneratedAssetRepositoryImpl implements  GeneratedAssetReposito
                     resultSet.getObject("id", UUID.class),
                     resultSet.getObject("request_id", UUID.class),
                     resultSet.getString("object_key"),
-                    GeneratedAssetType.valueOf(resultSet.getString("asset_type")),
                     resultSet.getString("content_type"),
                     resultSet.getObject("size_bytes", Integer.class),
-                    resultSet.getObject("duration", Integer.class),
-                    resultSet.getObject("width", Integer.class),
-                    resultSet.getObject("height", Integer.class),
                     resultSet.getObject("created_at", OffsetDateTime.class)
             );
 
@@ -44,47 +39,31 @@ public class JdbcGeneratedAssetRepositoryImpl implements  GeneratedAssetReposito
                     id,
                     request_id,
                     object_key,
-                    asset_type,
                     content_type,
                     size_bytes,
-                    duration,
-                    width,
-                    height,
                     created_at
                 )
                 values (
                     :id,
                     :requestId,
                     :objectKey,
-                    :assetType,
                     :contentType,
                     :sizeBytes,
-                    :duration,
-                    :width,
-                    :height,
                     coalesce(:createdAt, current_timestamp)
                 )
                 returning
                     id,
                     request_id,
                     object_key,
-                    asset_type,
                     content_type,
                     size_bytes,
-                    duration,
-                    width,
-                    height,
                     created_at
                 """)
                 .param("id", generatedAsset.id())
                 .param("requestId", generatedAsset.requestId())
                 .param("objectKey", generatedAsset.objectKey())
-                .param("assetType", generatedAsset.assetType().name())
                 .param("contentType", generatedAsset.contentType())
                 .param("sizeBytes", generatedAsset.sizeBytes(), Types.INTEGER)
-                .param("duration", generatedAsset.duration(), Types.INTEGER)
-                .param("width", generatedAsset.width(), Types.INTEGER)
-                .param("height", generatedAsset.height(), Types.INTEGER)
                 .param("createdAt", generatedAsset.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
                 .query(ROW_MAPPER)
                 .single();
@@ -97,12 +76,8 @@ public class JdbcGeneratedAssetRepositoryImpl implements  GeneratedAssetReposito
                     ga.id,
                     ga.request_id,
                     ga.object_key,
-                    ga.asset_type,
                     ga.content_type,
                     ga.size_bytes,
-                    ga.duration,
-                    ga.width,
-                    ga.height,
                     ga.created_at
                 from generated_assets ga
                 join generation_requests gr
@@ -123,12 +98,8 @@ public class JdbcGeneratedAssetRepositoryImpl implements  GeneratedAssetReposito
                 id,
                 request_id,
                 object_key,
-                asset_type,
                 content_type,
                 size_bytes,
-                duration,
-                width,
-                height,
                 created_at
             from generated_assets
             where request_id = :requestId

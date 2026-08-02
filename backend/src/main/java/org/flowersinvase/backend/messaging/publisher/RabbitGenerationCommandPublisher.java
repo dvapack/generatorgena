@@ -3,6 +3,7 @@ package org.flowersinvase.backend.messaging.publisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flowersinvase.backend.entity.generation.GenerationEntity;
+import org.flowersinvase.backend.enums.GenerationStatus;
 import org.flowersinvase.backend.exception.rabbit.MessageBrokerUnavailableException;
 import org.flowersinvase.backend.dto.rabbit.GenerateContentCommand;
 import org.flowersinvase.backend.config.rabbit.RabbitTopologyProperties;
@@ -26,7 +27,7 @@ public class RabbitGenerationCommandPublisher implements GenerationCommandPublis
                 UUID.ofEpochMillis(System.currentTimeMillis()),
                 generationEntity.id(),
                 generationEntity.prompt(),
-                generationEntity.type()
+                GenerationStatus.QUEUED
         );
         try {
             rabbitTemplate.convertAndSend(

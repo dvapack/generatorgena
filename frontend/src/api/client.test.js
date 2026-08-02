@@ -45,10 +45,10 @@ describe("API client", () => {
     });
   });
 
-  test("creates an IMAGE generation with a bearer token", async () => {
+  test("creates a generation with a bearer token", async () => {
     localStorage.setItem("accessToken", "jwt-token");
     fetch.mockResolvedValue(
-      jsonResponse({ id: "generation-id", type: "IMAGE", status: "QUEUED" }, 201),
+      jsonResponse({ id: "generation-id", status: "QUEUED" }, 201),
     );
 
     await createGeneration("Розовый космический корабль");
@@ -61,7 +61,6 @@ describe("API client", () => {
       },
       body: JSON.stringify({
         prompt: "Розовый космический корабль",
-        type: "IMAGE",
       }),
     });
   });

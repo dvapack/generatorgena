@@ -85,8 +85,8 @@ async def test_rabbit_command_creates_minio_object() -> None:
                     {
                         "commandId": str(command_id),
                         "generationId": str(generation_id),
+                        "status": "QUEUED",
                         "prompt": "green square",
-                        "type": "IMAGE",
                     }
                 ).encode(),
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT,

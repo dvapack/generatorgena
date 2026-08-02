@@ -2,7 +2,6 @@ package org.flowersinvase.backend.repository.generation;
 
 import org.flowersinvase.backend.entity.generation.GenerationEntity;
 import org.flowersinvase.backend.enums.GenerationStatus;
-import org.flowersinvase.backend.enums.GenerationType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -21,12 +20,7 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     resultSet.getObject("id", UUID.class),
                     resultSet.getObject("user_id", UUID.class),
                     resultSet.getString("prompt"),
-                    GenerationType.valueOf(
-                            resultSet.getString("type")
-                    ),
-                    GenerationStatus.valueOf(
-                            resultSet.getString("status")
-                    ),
+                    GenerationStatus.valueOf(resultSet.getString("status")),
                     resultSet.getObject("rating", Integer.class),
                     resultSet.getObject("created_at", OffsetDateTime.class),
                     resultSet.getObject("completed_at", OffsetDateTime.class)
@@ -45,7 +39,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     id,
                     user_id,
                     prompt,
-                    type,
                     status,
                     rating,
                     created_at,
@@ -55,7 +48,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     :id,
                     :userId,
                     :prompt,
-                    :type,
                     :status,
                     :rating,
                     coalesce(:createdAt, current_timestamp),
@@ -65,7 +57,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     id,
                     user_id,
                     prompt,
-                    type,
                     status,
                     rating,
                     created_at,
@@ -74,7 +65,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                 .param("id", generationEntity.id())
                 .param("userId", generationEntity.userId())
                 .param("prompt", generationEntity.prompt())
-                .param("type", generationEntity.type().name())
                 .param("status", generationEntity.status().name())
                 .param("rating", generationEntity.rating(), Types.INTEGER)
                 .param("createdAt", generationEntity.createdAt(), Types.TIMESTAMP_WITH_TIMEZONE)
@@ -90,7 +80,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     id,
                     user_id,
                     prompt,
-                    type,
                     status,
                     rating,
                     created_at,
@@ -115,7 +104,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     id,
                     user_id,
                     prompt,
-                    type,
                     status,
                     rating,
                     created_at,
@@ -135,7 +123,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                     id,
                     user_id,
                     prompt,
-                    type,
                     status,
                     rating,
                     created_at,
@@ -157,7 +144,6 @@ public class JdbcGenerationRequestRepositoryImpl implements GenerationRequestRep
                 id,
                 user_id,
                 prompt,
-                type,
                 status,
                 rating,
                 created_at,

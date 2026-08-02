@@ -36,10 +36,9 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-test("loads an empty history and submits an IMAGE generation", async () => {
+test("loads an empty history and submits a generation", async () => {
   createGeneration.mockResolvedValue({
     id: "generation-id",
-    type: "IMAGE",
     status: "QUEUED",
   });
   getGeneration.mockReturnValue(new Promise(() => {}));
@@ -70,7 +69,6 @@ test("loads an empty history and submits an IMAGE generation", async () => {
 test("opens, rates and deletes a completed generation", async () => {
   const completed = {
     id: "completed-id",
-    type: "IMAGE",
     prompt: "Город будущего",
     status: "COMPLETED",
     rating: null,
@@ -78,7 +76,6 @@ test("opens, rates and deletes a completed generation", async () => {
     completedAt: "2026-07-29T12:01:00+04:00",
     asset: {
       id: "asset-id",
-      assetType: "IMAGE",
       contentType: "image/png",
     },
   };

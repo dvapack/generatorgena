@@ -17,7 +17,12 @@ public class RabbitGenerationResultListener implements GenerationResultListener 
     @Override
     @RabbitListener(queues = "#{@generationResultsQueue.name}")
     public void handle(GenerationResultEvent event) {
-        log.info("Получено сообщение от rabbitmq: id={}", event.eventId());
+        log.info(
+                "Получено сообщение от rabbitmq: id={}, generationId={}, status={}",
+                event.eventId(),
+                event.generationId(),
+                event.status()
+        );
         generationService.handleResult(event);
     }
 }

@@ -28,12 +28,11 @@ RUN apt-get update && \
 WORKDIR /app
 
 COPY --from=build --chown=app:app /workspace/build/libs/*.jar app.jar
-
-USER app
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=10 \
     CMD ["curl", "--fail", "--silent", "http://localhost:8080/actuator/health/readiness"]
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["docker-entrypoint.sh"]

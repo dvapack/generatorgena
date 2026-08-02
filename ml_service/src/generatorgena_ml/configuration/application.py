@@ -90,9 +90,10 @@ def create_application(
     settings_provider: SettingsProvider = get_settings,
 ) -> FastAPI:
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.WARNING,
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
+    logging.getLogger("generatorgena_ml").setLevel(logging.INFO)
     context = ApplicationContext(settings_provider)
 
     @asynccontextmanager

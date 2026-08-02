@@ -94,7 +94,7 @@ export const login = (email, password) =>
 export const createGeneration = (prompt) =>
   request("/generations", {
     method: "POST",
-    body: { prompt, type: "IMAGE" },
+    body: { prompt },
   });
 
 export const getGenerations = (page = 0, size = 20) =>

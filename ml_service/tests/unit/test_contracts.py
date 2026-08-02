@@ -8,7 +8,6 @@ from generatorgena_ml.mapper import GenerationMessageMapper
 from generatorgena_ml.model import (
     CompletedEvent,
     GeneratedAsset,
-    GenerationType,
 )
 
 
@@ -21,14 +20,15 @@ def test_command_uses_backend_camel_case_contract() -> None:
             "commandId": str(command_id),
             "generationId": str(generation_id),
             "prompt": "flowers in a vase",
-            "type": "IMAGE",
+            "status": "QUEUED",
         }
     )
     command = GenerationMessageMapper.to_command(dto)
 
     assert command.command_id == command_id
     assert command.generation_id == generation_id
-    assert command.generation_type is GenerationType.IMAGE
+    assert command.prompt == "flowers in a vase"
+    assert command.status == "QUEUED"
 
 
 def test_command_rejects_unknown_fields() -> None:
@@ -38,7 +38,7 @@ def test_command_rejects_unknown_fields() -> None:
                 "commandId": str(uuid4()),
                 "generationId": str(uuid4()),
                 "prompt": "flowers",
-                "type": "IMAGE",
+                "status": "QUEUED",
                 "schemaVersion": 1,
             }
         )
@@ -51,8 +51,7 @@ def test_completed_event_serializes_expected_asset_shape() -> None:
         asset=GeneratedAsset(
             object_key="images/requests/id/result.png",
             size_bytes=123,
-            width=64,
-            height=64,
+            content_type="image/png",
         ),
     )
 
@@ -62,11 +61,7 @@ def test_completed_event_serializes_expected_asset_shape() -> None:
     assert payload["status"] == "COMPLETED"
     assert payload["asset"] == {
         "objectKey": "images/requests/id/result.png",
-        "assetType": "IMAGE",
         "contentType": "image/png",
         "sizeBytes": 123,
-        "width": 64,
-        "height": 64,
-        "duration": None,
     }
     assert "schemaVersion" not in payload

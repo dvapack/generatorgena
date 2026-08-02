@@ -25,7 +25,7 @@ class GenerationMessageMapper:
             command_id=dto.command_id,
             generation_id=dto.generation_id,
             prompt=dto.prompt,
-            generation_type=dto.generation_type,
+            status=dto.status,
         )
 
     @staticmethod
@@ -47,12 +47,8 @@ class GenerationMessageMapper:
                 occurred_at=event.occurred_at,
                 asset=AssetPayload(
                     object_key=event.asset.object_key,
-                    asset_type="IMAGE",
-                    content_type="image/png",
+                    content_type=event.asset.content_type,
                     size_bytes=event.asset.size_bytes,
-                    width=event.asset.width,
-                    height=event.asset.height,
-                    duration=event.asset.duration,
                 ),
             )
         if isinstance(event, FailedEvent):

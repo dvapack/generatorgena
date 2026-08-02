@@ -35,7 +35,6 @@ GenerationRequest 1 -> 0..1 GeneratedAsset
 | id          | UUID           | PK               | Идентификатор генерации                            |
 | userId      | UUID           | FK, NOT NULL     | Пользователь, который создал генерацию             |
 | prompt      | String         | NOT NULL         | Текстовое описание для генерации                   |
-| type        | ENUM           | NOT NULL         | Тип запрошенной генерации                          |
 | status      | ENUM           | NOT NULL         | Текущий статус генерации                           |
 | rating      | Integer        | NULL             | Оценка генерации от 1 до 5                         |
 | createdAt   | LocalDateTime  | NOT NULL         | Дата создания запроса                              |
@@ -44,16 +43,6 @@ GenerationRequest 1 -> 0..1 GeneratedAsset
 `rating` равен `null`, пока пользователь не поставил оценку.
 
 `completedAt` заполняется только при переходе в финальный статус `COMPLETED` или `FAILED`.
-
-### generation_type
-
-Это enum в приложении.
-
-| Значение |
-|----------|
-| IMAGE    |
-| VIDEO    |
-| AUDIO    |
 
 ### generation_status
 
@@ -75,23 +64,9 @@ GenerationRequest 1 -> 0..1 GeneratedAsset
 | id          | UUID          | PK                     | Идентификатор файла результата          |
 | requestId   | UUID          | FK, NOT NULL, UNIQUE   | Запрос генерации                        |
 | objectKey   | String        | NOT NULL, UNIQUE       | Ключ объекта в S3                       |
-| assetType   | ENUM          | NOT NULL               | Тип файла результата                    |
-| contentType | String        | NOT NULL               | MIME-тип файла, например `image/png`    |
+| contentType | String        | NOT NULL               | MIME-тип файла                          |
 | sizeBytes   | Integer       | NULL                   | Размер файла в байтах                   |
-| duration    | Integer       | NULL                   | Длительность в секундах для аудио/видео |
-| width       | Integer       | NULL                   | Ширина для изображения/видео            |
-| height      | Integer       | NULL                   | Высота для изображения/видео            |
 | createdAt   | LocalDateTime | NOT NULL               | Дата создания записи                    |
-
-### asset_type
-
-Это enum в приложении.
-
-| Значение |
-|----------|
-| IMAGE    |
-| VIDEO    |
-| AUDIO    |
 
 ## Индексы и ограничения
 
@@ -133,12 +108,12 @@ users -> generation_requests -> generated_assets
 
 ### generation_requests
 
-| id                                   | userId                               | prompt          | type  | status    | rating | createdAt                 | completedAt               |
-|--------------------------------------|--------------------------------------|-----------------|-------|-----------|--------|---------------------------|---------------------------|
-| 111e8400-e29b-41d4-a716-446655440000 | 550e8400-e29b-41d4-a716-446655440000 | test_generation | IMAGE | COMPLETED | 5      | 2026-07-12T10:50:00+04:00 | 2026-07-12T10:52:00+04:00 |
+| id                                   | userId                               | prompt          | status    | rating | createdAt                 | completedAt               |
+|--------------------------------------|--------------------------------------|-----------------|-----------|--------|---------------------------|---------------------------|
+| 111e8400-e29b-41d4-a716-446655440000 | 550e8400-e29b-41d4-a716-446655440000 | test_generation | COMPLETED | 5      | 2026-07-12T10:50:00+04:00 | 2026-07-12T10:52:00+04:00 |
 
 ### generated_assets
 
-| id                                   | requestId                            | assetType | contentType | objectKey                                             |
-|--------------------------------------|--------------------------------------|-----------|-------------|-------------------------------------------------------|
-| 222e8400-e29b-41d4-a716-446655440000 | 111e8400-e29b-41d4-a716-446655440000 | IMAGE     | image/png   | images/requests/111e8400-e29b-41d4-a716/result.png   |
+| id                                   | requestId                            | contentType | objectKey                                           |
+|--------------------------------------|--------------------------------------|-------------|-----------------------------------------------------|
+| 222e8400-e29b-41d4-a716-446655440000 | 111e8400-e29b-41d4-a716-446655440000 | image/png   | images/requests/111e8400-e29b-41d4-a716/result.png |

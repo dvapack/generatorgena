@@ -50,7 +50,7 @@ def command_message() -> FakeMessage:
                 "commandId": str(uuid4()),
                 "generationId": str(uuid4()),
                 "prompt": "flowers",
-                "type": "IMAGE",
+                "status": "QUEUED",
             }
         ).encode()
     )

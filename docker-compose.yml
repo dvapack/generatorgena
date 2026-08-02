@@ -21,6 +21,7 @@ x-ml-environment: &ml-environment
 
 services:
   frontend:
+    attach: false
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -52,6 +53,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_BACKEND_ACCESS_KEY:-backend}
       MINIO_SECRET_KEY: ${MINIO_BACKEND_SECRET_KEY:-backend-secret}
       MINIO_BUCKET: ${MINIO_BUCKET:-generated-assets}
+      LOG_FILE: /app/logs/app.log
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,6 +63,8 @@ services:
         condition: service_completed_successfully
     ports:
       - "${BACKEND_PORT:-8080}:8080"
+    volumes:
+      - ./logs/backend:/app/logs
     init: true
     restart: unless-stopped
 
@@ -81,6 +85,7 @@ services:
     restart: unless-stopped
 
   postgres:
+    attach: false
     image: postgres:17.10-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-gena}
@@ -100,6 +105,7 @@ services:
     restart: unless-stopped
 
   rabbitmq:
+    attach: false
     image: rabbitmq:4.1.8-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-myuser}
@@ -121,6 +127,7 @@ services:
     restart: unless-stopped
 
   minio:
+    attach: false
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     command:
       - server
@@ -147,6 +154,7 @@ services:
     restart: unless-stopped
 
   minio-init:
+    attach: false
     image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
     entrypoint:
       - /bin/sh

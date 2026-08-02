@@ -12,14 +12,7 @@ def utc_now() -> datetime:
     return datetime.now(UTC)
 
 
-class GenerationType(StrEnum):
-    IMAGE = "IMAGE"
-    VIDEO = "VIDEO"
-    AUDIO = "AUDIO"
-
-
 class FailureCode(StrEnum):
-    UNSUPPORTED_TYPE = "UNSUPPORTED_TYPE"
     GENERATION_ERROR = "GENERATION_ERROR"
     STORAGE_ERROR = "STORAGE_ERROR"
 
@@ -29,7 +22,7 @@ class GenerationCommand:
     command_id: UUID
     generation_id: UUID
     prompt: str
-    generation_type: GenerationType
+    status: str = "QUEUED"
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,11 +38,7 @@ class GeneratedImage:
 class GeneratedAsset:
     object_key: str
     size_bytes: int
-    width: int
-    height: int
-    asset_type: str = "IMAGE"
-    content_type: str = "image/png"
-    duration: None = None
+    content_type: str
 
 
 @dataclass(frozen=True, slots=True)

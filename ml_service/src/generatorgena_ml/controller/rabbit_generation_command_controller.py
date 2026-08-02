@@ -36,6 +36,12 @@ class RabbitGenerationCommandController:
             return
 
         command = self._mapper.to_command(dto)
+        logger.info(
+            "Получено сообщение от rabbitmq: id=%s, generationId=%s, status=%s",
+            command.command_id,
+            command.generation_id,
+            command.status,
+        )
         context = {
             "command_id": str(command.command_id),
             "generation_id": str(command.generation_id),

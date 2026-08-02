@@ -38,6 +38,13 @@ app:
       secret-key: ${MINIO_SECRET_KEY}
       bucket: ${MINIO_BUCKET:generated-assets}
 
+logging:
+  exception-conversion-word: "%ex{short}"
+  level:
+    root: warn
+    org.flowersinvase.backend: info
+  file:
+    name: ${LOG_FILE:logs/app.log}
 
 management:
   endpoint:

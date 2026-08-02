@@ -33,7 +33,7 @@ EXPOSE 5000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5m --retries=5 \
     CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health/ready', timeout=3)"]
 
-CMD ["uvicorn", "generatorgena_ml.main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "generatorgena_ml.main:app", "--host", "0.0.0.0", "--port", "5000", "--no-access-log"]
 
 FROM runtime AS test
 

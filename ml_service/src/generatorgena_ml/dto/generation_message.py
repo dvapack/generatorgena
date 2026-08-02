@@ -8,7 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from generatorgena_ml.model import FailureCode, GenerationType
+from generatorgena_ml.model import FailureCode
 
 
 class MessageDto(BaseModel):
@@ -23,17 +23,13 @@ class GenerateContentCommandDto(MessageDto):
     command_id: UUID = Field(alias="commandId")
     generation_id: UUID = Field(alias="generationId")
     prompt: str = Field(min_length=1)
-    generation_type: GenerationType = Field(alias="type")
+    status: Literal["QUEUED"]
 
 
 class AssetPayload(MessageDto):
     object_key: str = Field(alias="objectKey")
-    asset_type: Literal["IMAGE"] = Field(alias="assetType", default="IMAGE")
-    content_type: Literal["image/png"] = Field(alias="contentType", default="image/png")
+    content_type: str = Field(alias="contentType", min_length=1)
     size_bytes: int = Field(alias="sizeBytes", ge=1)
-    width: int = Field(gt=0)
-    height: int = Field(gt=0)
-    duration: None = None
 
 
 class ErrorPayload(MessageDto):

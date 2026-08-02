@@ -163,12 +163,8 @@ public class GenerationServiceImpl implements GenerationService {
                     UUID.ofEpochMillis(System.currentTimeMillis()),
                     generationEntity.id(),
                     payload.objectKey(),
-                    payload.assetType(),
                     payload.contentType(),
                     payload.sizeBytes(),
-                    payload.duration(),
-                    payload.width(),
-                    payload.height(),
                     event.occurredAt()
             );
             generatedAssetRepository.save(asset);

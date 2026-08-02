@@ -8,7 +8,6 @@ from generatorgena_ml.model.generation import (
     GeneratedImage,
     GenerationCommand,
     GenerationEvent,
-    GenerationType,
     ProcessingEvent,
 )
 
@@ -20,6 +19,5 @@ __all__ = [
     "GeneratedImage",
     "GenerationCommand",
     "GenerationEvent",
-    "GenerationType",
     "ProcessingEvent",
 ]
