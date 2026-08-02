@@ -15,7 +15,7 @@ create table generation_requests (
     completed_at timestamp with time zone
 );
 
-create index idx_requests_userid_created_at on generation_requests(user_id, created_at desc);
+create index idx_generation_requests_user_created_id on generation_requests (user_id, created_at desc, id desc);
 
 create table generated_assets (
     id uuid primary key,
