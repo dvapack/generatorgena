@@ -68,9 +68,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -86,9 +84,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -126,9 +122,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
@@ -144,9 +138,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -162,9 +154,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(MessageBrokerUnavailableException.class)
@@ -180,9 +170,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
     @ExceptionHandler(StorageUnavailableException.class)
@@ -198,9 +186,7 @@ public class GlobalExceptionHandler {
                 List.of()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
     @ExceptionHandler(Exception.class)
