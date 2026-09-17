@@ -6,6 +6,8 @@ __pycache__/
 Pipfile
 Pipfile.lock
 requirements.txt
+!ml_service/requirements.txt
+!ml_service/requirements-test.txt
 
 logs/
 *.log

@@ -1,101 +1,183 @@
-html,
-body {
-    font-family: "Montserrat";
-    font-weight: 900 !important;
-    background: -webkit-linear-gradient(90deg, #7d5dfe, #bb3bf7, #ff66a1);
-    background: linear-gradient(90deg, #7d5dfe, #bb3bf7, #ff66a1);
+:global(*) {
+  box-sizing: border-box;
 }
+
+:global(html),
+:global(body),
+:global(#root) {
+  min-height: 100%;
+  margin: 0;
+}
+
+:global(body) {
+  font-family: "Montserrat", system-ui, sans-serif;
+  background: linear-gradient(120deg, #7357f5 0%, #b635ed 52%, #ff669d 100%);
+}
+
 .LoginPage {
-    position: relative !important;
-    width: 100% !important;
-    height: 100% !important;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+  align-items: center;
+  gap: clamp(40px, 8vw, 140px);
+  min-height: 100vh;
+  padding: 72px clamp(24px, 8vw, 140px);
+  overflow: hidden;
 }
-.MainPage {
-    margin-top: 14% !important;
-}
-.Info {
-    display: flex !important;
-    position: absolute;
-    justify-content: center !important;
-    align-items: center !important;
-    flex-direction: column !important;
-    left: 16% !important;
-    line-height: 1.5 !important;
-    margin-top: 11% !important;
-}
-.InfoText {
-    font-weight: 600 !important;
-    color: #ffffff !important;
-    opacity: 0.8 !important;
-    text-align: center !important;
-    margin-left: -45%;
-    font-size: 3rem !important;
-    word-spacing: 100% !important;
-    max-width: 500px;
-}
+
 .MainBlur {
-    position: absolute;
-    width: 45%;
-    height: 100%;
-    left: 55%;
-    top: 0%;
-    background: rgba(30, 30, 30, 0.1);
-    filter: blur(25px);
+  position: absolute;
+  inset: 0 0 0 55%;
+  background: rgba(31, 13, 60, 0.12);
+  backdrop-filter: blur(24px);
 }
-.form {
-    position: relative !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    flex-direction: column !important;
-}
-.MainForm {
-    position: relative !important;
-    justify-content: center !important;
-    align-items: center !important;
-    flex-direction: column !important;
-    padding-bottom: 4% !important;
-    padding-top: 7% !important;
-    padding-left: 1.5% !important;
-    padding-right: 1.5% !important;
-    border-radius: 30px !important;
-    overflow: auto !important;
-    left: 20% !important;
-    width: 120% !important;
-    height: 105%;
-}
-.MainFormBlur {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0%;
-    top: 0%;
-    background: rgba(30, 30, 30, 0.1);
-    filter: blur(5px);
-}
-.MainFormHeaderText {
-    color: #ffffff !important;
-    opacity: 0.75 !important;
-    text-align: center !important;
-    font-size: 1.7rem !important;
-    word-spacing: 100% !important;
-}
+
+.Hero,
+.MainForm,
 .Bottom {
-    display: flex !important;
-    flex-direction: row !important;
-    align-content: flex-end !important;
-    justify-content: center !important;
-    align-items: center !important;
-    margin-left: 3% !important;
-    margin-top: 2% !important;
-    width: 30% !important;
-    position: fixed;
-    bottom: 2% !important;
+  position: relative;
+  z-index: 1;
 }
-.BottomText {
-    color: #ffffff !important;
-    opacity: 70% !important;
-    text-align: center !important;
-    font-size: 0.75rem !important;
-    word-spacing: 100% !important;
+
+.Hero {
+  max-width: 650px;
+  color: white;
+}
+
+.Eyebrow {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.InfoText {
+  margin: 0;
+  font-size: clamp(2.7rem, 6vw, 5.8rem);
+  font-weight: 650;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+
+.Lead {
+  max-width: 540px;
+  margin: 28px 0 0;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1.6;
+  opacity: 0.78;
+}
+
+.MainForm {
+  width: min(100%, 450px);
+  justify-self: center;
+  padding: clamp(32px, 5vw, 54px) clamp(24px, 4vw, 42px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 32px;
+  box-shadow: 0 30px 80px rgba(56, 14, 83, 0.2);
+  overflow: hidden;
+}
+
+.MainFormBlur {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(39, 15, 69, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.MainFormHeaderText {
+  margin: 0 0 20px;
+  color: white;
+  font-size: 2rem;
+  font-weight: 650;
+}
+
+.form input {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.form button {
+  width: 100%;
+  margin: 24px 0 0;
+}
+
+.form button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.Error {
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 12px 14px;
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.45;
+  background: rgba(119, 14, 51, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+}
+
+.FormFooter {
+  margin: 22px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.FormFooter a {
+  color: white;
+  font-weight: 650;
+  text-underline-offset: 3px;
+}
+
+.Bottom {
+  position: absolute;
+  bottom: 24px;
+  left: clamp(24px, 8vw, 140px);
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+@media (max-width: 850px) {
+  .LoginPage {
+    grid-template-columns: 1fr;
+    gap: 42px;
+    padding: 54px 22px 82px;
+  }
+
+  .MainBlur {
+    inset: 45% 0 0;
+  }
+
+  .Hero {
+    text-align: center;
+    justify-self: center;
+  }
+
+  .Lead {
+    margin-inline: auto;
+  }
+
+  .InfoText {
+    font-size: clamp(2.6rem, 13vw, 4.6rem);
+  }
+
+  .Bottom {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }

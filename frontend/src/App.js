@@ -1,21 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
-// import './App.css';
-import { AuthContext } from './context/index.js';
-import AppRouter from './components/AppRouter.jsx';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { AuthContext } from "./context";
+import AppRouter from "./components/AppRouter";
 
 function App() {
-  const [isAuth, setIsAuth] = useState(false);
+  const [accessToken, setAccessToken] = useState(() =>
+    localStorage.getItem("accessToken"),
+  );
+
+  const signIn = useCallback((token) => {
+    localStorage.setItem("accessToken", token);
+    setAccessToken(token);
+  }, []);
+
+  const signOut = useCallback(() => {
+    localStorage.removeItem("accessToken");
+    setAccessToken(null);
+  }, []);
+
   useEffect(() => {
-    if (localStorage.getItem('auth')) {
-      setIsAuth(true)
-    }
-  }, [])
+    const handleUnauthorized = () => signOut();
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () =>
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  }, [signOut]);
+
+  const auth = useMemo(
+    () => ({
+      accessToken,
+      isAuth: Boolean(accessToken),
+      signIn,
+      signOut,
+    }),
+    [accessToken, signIn, signOut],
+  );
+
   return (
-    <AuthContext.Provider value={{
-      isAuth,
-      setIsAuth,
-    }}>
+    <AuthContext.Provider value={auth}>
       <AppRouter />
     </AuthContext.Provider>
   );
