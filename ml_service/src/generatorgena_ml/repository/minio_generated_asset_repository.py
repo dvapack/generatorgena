@@ -12,7 +12,7 @@ from urllib3.exceptions import HTTPError
 
 from generatorgena_ml.configuration.settings import MinioProperties
 from generatorgena_ml.exception import AssetStorageError
-from generatorgena_ml.model import GeneratedImage
+from generatorgena_ml.model import GeneratedAsset, GeneratedImage
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +82,31 @@ class MinioGeneratedAssetRepository:
             )
         except Exception:
             return False
+
+    async def find(self, object_key: str) -> GeneratedAsset | None:
+        try:
+            stat = await asyncio.to_thread(
+                self._client.stat_object,
+                self._bucket,
+                object_key,
+            )
+        except S3Error as exception:
+            if exception.code in {"NoSuchKey", "NoSuchObject", "NotFound"}:
+                return None
+            raise AssetStorageError(
+                "Не удалось проверить наличие изображения в MinIO",
+                retryable=self._is_retryable(exception),
+            ) from exception
+        except Exception as exception:
+            raise AssetStorageError(
+                "Не удалось проверить наличие изображения в MinIO",
+                retryable=self._is_retryable(exception),
+            ) from exception
+        return GeneratedAsset(
+            object_key=object_key,
+            size_bytes=stat.size,
+            content_type=stat.content_type or "application/octet-stream",
+        )
 
     async def save(self, object_key: str, image: GeneratedImage) -> None:
         for attempt in range(1, self._max_attempts + 1):

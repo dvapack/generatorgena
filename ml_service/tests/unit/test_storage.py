@@ -93,3 +93,16 @@ async def test_readiness_requires_existing_bucket() -> None:
 
     assert await storage.is_ready() is True
     client.bucket_exists.assert_called_once_with("generated-assets")
+
+
+async def test_find_returns_existing_asset_metadata() -> None:
+    client = MagicMock()
+    client.stat_object.return_value = MagicMock(size=42, content_type="image/png")
+    storage = MinioGeneratedAssetRepository(client=client, bucket="generated-assets")
+
+    asset = await storage.find("images/requests/id/result.png")
+
+    assert asset is not None
+    assert asset.object_key == "images/requests/id/result.png"
+    assert asset.size_bytes == 42
+    assert asset.content_type == "image/png"

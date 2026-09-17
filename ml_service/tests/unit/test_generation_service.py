@@ -9,6 +9,7 @@ from generatorgena_ml.exception import (
 from generatorgena_ml.model import (
     CompletedEvent,
     FailedEvent,
+    GeneratedAsset,
     GeneratedImage,
     GenerationCommand,
     GenerationEvent,
@@ -20,17 +21,27 @@ from generatorgena_ml.service import GenerationService
 class FakeGenerator:
     def __init__(self, error: Exception | None = None):
         self.error = error
+        self.calls = 0
 
     async def generate(self, prompt: str) -> GeneratedImage:
+        self.calls += 1
         if self.error:
             raise self.error
         return GeneratedImage(b"png", "image/png", 3, 64, 64)
 
 
 class FakeRepository:
-    def __init__(self, error: Exception | None = None):
+    def __init__(
+        self,
+        error: Exception | None = None,
+        existing: GeneratedAsset | None = None,
+    ):
         self.error = error
+        self.existing = existing
         self.uploads: list[tuple[str, GeneratedImage]] = []
+
+    async def find(self, object_key: str) -> GeneratedAsset | None:
+        return self.existing
 
     async def save(self, object_key: str, image: GeneratedImage) -> None:
         if self.error:
@@ -113,3 +124,25 @@ async def test_event_publication_error_crosses_service_boundary() -> None:
         pass
     else:
         raise AssertionError("EventPublicationError was expected")
+
+
+async def test_existing_asset_skips_expensive_generation() -> None:
+    existing = GeneratedAsset(
+        object_key="images/requests/existing/result.png",
+        size_bytes=123,
+        content_type="image/png",
+    )
+    generator = FakeGenerator()
+    publisher = FakePublisher()
+    service = GenerationService(
+        generator,
+        FakeRepository(existing=existing),
+        publisher,
+    )
+
+    await service.generate(command())
+
+    assert generator.calls == 0
+    assert len(publisher.events) == 1
+    assert isinstance(publisher.events[0], CompletedEvent)
+    assert publisher.events[0].asset == existing

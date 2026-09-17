@@ -11,11 +11,11 @@ import org.flowersinvase.backend.exception.generation.InvalidGenerationStateExce
 import org.flowersinvase.backend.mapper.GenerationMapper;
 import org.flowersinvase.backend.dto.rabbit.GeneratedAssetPayload;
 import org.flowersinvase.backend.dto.rabbit.GenerationResultEvent;
-import org.flowersinvase.backend.messaging.publisher.GenerationCommandPublisher;
 import org.flowersinvase.backend.model.DownloadedAsset;
 import org.flowersinvase.backend.repository.generation.GeneratedAssetRepository;
 import org.flowersinvase.backend.repository.generation.GenerationRequestRepository;
 import org.flowersinvase.backend.service.generation.GenerationService;
+import org.flowersinvase.backend.service.outbox.GenerationOutboxService;
 import org.flowersinvase.backend.service.storage.StorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +31,7 @@ public class GenerationServiceImpl implements GenerationService {
     private final GeneratedAssetRepository generatedAssetRepository;
     private final GenerationRequestRepository generationRequestRepository;
     private final GenerationMapper generationMapper;
-    private final GenerationCommandPublisher generationCommandPublisher;
+    private final GenerationOutboxService generationOutboxService;
     private final StorageService storageService;
 
     @Override
@@ -40,8 +40,8 @@ public class GenerationServiceImpl implements GenerationService {
         UUID generationId = UUID.ofEpochMillis(System.currentTimeMillis());
         GenerationEntity generationEntity = generationMapper.toGenerationEntity(request, generationId, userId);
         GenerationEntity savedGenerationEntity = generationRequestRepository.save(generationEntity);
-        generationCommandPublisher.publish(savedGenerationEntity);
-        log.info("Генерация создана и отправлена в очередь: userId={}, generationId={}", userId, generationId);
+        generationOutboxService.enqueue(savedGenerationEntity);
+        log.info("Генерация создана и добавлена в outbox: userId={}, generationId={}", userId, generationId);
         return generationMapper.toCreateGenerationResponse(savedGenerationEntity);
     }
 

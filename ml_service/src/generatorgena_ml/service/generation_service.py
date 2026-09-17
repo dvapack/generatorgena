@@ -42,6 +42,22 @@ class GenerationService:
             "generation_id": str(command.generation_id),
         }
         logger.info("Получена команда на генерацию", extra=context)
+        object_key = self.object_key(command.generation_id)
+        existing_asset = await self._asset_repository.find(object_key)
+        if existing_asset is not None:
+            await self._event_publisher.publish(
+                CompletedEvent(
+                    command_id=command.command_id,
+                    generation_id=command.generation_id,
+                    asset=existing_asset,
+                )
+            )
+            logger.info(
+                "Команда уже была выполнена, повторная генерация пропущена",
+                extra=context,
+            )
+            return
+
         await self._event_publisher.publish(
             ProcessingEvent(
                 command_id=command.command_id,
@@ -70,7 +86,6 @@ class GenerationService:
             )
             return
 
-        object_key = self.object_key(command.generation_id)
         try:
             await self._asset_repository.save(object_key, image)
         except AssetStorageError as exception:

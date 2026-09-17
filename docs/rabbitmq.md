@@ -2,8 +2,13 @@
 1. generationEntity.requests
 2. generationEntity.results
 
-Backend пишет в свой exchange(generationEntity.commands) события на генерацию с routing_key generationEntity.generate, которые 
-попадают в generationEntity.requests. Мл сервис читает из этой очереди. Далее при получении запроса на генерацию и при начале
+Backend сначала сохраняет команду в таблицу `outbox_messages` в той же транзакции,
+что и `generation_requests`. Фоновый отправитель публикует неотправленные команды в
+exchange `generation.commands` с routing key `generation.generate`. После подтверждения
+RabbitMQ запись outbox отмечается отправленной. При ошибке команда остаётся в PostgreSQL
+и отправляется повторно с увеличивающейся задержкой.
+
+Команды попадают в `generation.requests`, откуда их читает ML-сервис. Далее при получении запроса на генерацию и при начале
 генерации он отправляет в свой exchange(generationEntity.events) событие о начале генерации с routing_key generationEntity.processing,
 в случае успешной генерации отправляет generationEntity.completed, в случае неудачи - generationEntity.failed. Для всех этих событий
 одна очередь - generationEntity.results.
